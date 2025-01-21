@@ -12,7 +12,6 @@ from Bio.SeqRecord import SeqRecord
 
 fLog = None
 
-
 def Exec(CmdLine):
     """
     Execute a command line in a shell, logging it to a file if specified
@@ -184,6 +183,7 @@ def main(fasta_file, output_path, database, threads):
     prot_path = f"{output_path}/proteins.faa"
     nucl_path = f"{output_path}/reoriented_nucleotide_sequences.fna"
     results = []
+    no_orf_pred = []
     overwrite = True
     overwrite_n = True
     for record in records:
@@ -216,11 +216,17 @@ def main(fasta_file, output_path, database, threads):
                 overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
                 overwrite = write_proteins(genes, record.id, prot_path, overwrite)
             else:
+                no_orf_pred.append(record.id)
                 print(
                     f"No ORF predictions with a total coding capacity over 50% for {record.id}."
                 )
 
         results.extend(seq_results)
+    
+    with open('no_ORF_prediction.txt', 'w') as f:
+        for line in no_orf_pred:
+            f.write(f"{line}\n")
+
 
     # Create DataFrame from results
     columns = ["seqid", "seq_length", "orf", "start", "end", "strand", "start_codon", "partial_begin", "partial_end"]
