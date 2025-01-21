@@ -9,8 +9,8 @@ Package requirement: BioPython and argparse
 
 Usage:
 	Simple command:
-		python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt < annotation.gbk
-		cat annotation.gbk | python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt  # integrate gbk2tbl into a pipeline
+		python gbk2tbl.py --mincontigsize 200 --prefix any_prefix < annotation.gbk
+		cat annotation.gbk | python gbk2tbl.py --mincontigsize 200 --prefix any_prefix # integrate gbk2tbl into a pipeline
 	Redirecting error messages to a text file (optional):
 		python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt < annotation.gbk 2> stderr.txt
 		cat annotation.gbk | python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt 2> stderr.txt
@@ -18,16 +18,6 @@ Usage:
 	
 Inputs:
 	A GenBank file, which ought to be passed to the script through the standard input (stdin).
-	A modifier file: a plain text file containing modifiers for every FASTA definition line.
-		All FASTA header modifiers must be written in a single line and are separated by a space character. This line will
-		be copied and directly printed along with the record name as the definition line of every contig sequence.
-		No space should be placed besides the '=' sign. Check http://www.ncbi.nlm.nih.gov/Sequin/modifiers.html for choosing a proper format for modifiers.
-		For example, the content of a modifier file can be (no tab character):
-			[organism=Serratia marcescens subsp. marcescens] [sub-species=marcescens] [strain=AH0650_Sm1] [topology=linear] [moltype=DNA] [tech=wgs] [gcode=11] [country=Australia] [isolation-source=sputum]
-		Furthermore, regarding the modifier 'topology':
-			[topology=?]: the molecular topology (circular/linear) of the sequence if this information is not contained in records
-				For contigs: linear (the default value)
-				For finished genomes of plasmids and bacterial chromosomes: circular
 
 Outputs:
 	any_prefix.tbl: the Sequin feature table
@@ -35,10 +25,8 @@ Outputs:
 	These files are inputs for tbl2asn which generates ASN.1 files (*.sqn).
 
 Arguments:
-	--mincontigsize: the minimum contig size, default = 200 in accordance with NCBI's regulation
-	--prefix: the prefix of output filenames, default = 'seq'
-	--modifiers: the filename of the modifier file, default = 'modifiers.txt'
-	  
+	--mincontigsize: the minimum contig size, default = 0
+	--prefix: the prefix of output filenames, default = 'seq'	  
 Development notes:
 	This script is derived from the one developed by SEQanswers users nickloman (https://gist.github.com/nickloman/2660685/genbank_to_tbl.py) and ErinL who modified nickloman's script and put it
 	on the forum post (http://seqanswers.com/forums/showthread.php?t=19975).
@@ -53,33 +41,30 @@ Licence: GNU GPL 2.1
 
 from __future__ import print_function
 import sys
+import click
 from Bio import SeqIO
-from argparse import ArgumentParser
 
-def parse_args():
-# Extract arguments from the command line
-	parser = ArgumentParser(description= 'Read arguments: species, strain, BioProject, prefix')
-	parser.add_argument('--mincontigsize', type = int, required = False, default = 0, help = 'The minimum contig length')
-	parser.add_argument('--prefix', type = str, required = False, default = 'seq', help = 'The prefix of output filenames')
-	return parser.parse_args()
+@click.command()
+@click.option('-i', '--input', type = str, required = True, help = 'Input genbank file')
+@click.option('-m', '--mincontigsize', type = int, required = False, default = 0, help = 'The minimum contig length')
+@click.option('-p', '--prefix', type = str, required = False, default = 'seq', help = 'The prefix of output filenames')
 
-allowed_qualifiers = ['locus_tag', 'gene', 'product', 'pseudo', 'protein_id', 'gene_desc', 'old_locus_tag', 'note', 'inference', \
+def gbk2tbl(input, mincontigsize, prefix):
+	allowed_qualifiers = ['locus_tag', 'gene', 'product', 'pseudo', 'protein_id', 'gene_desc', 'old_locus_tag', 'note', 'inference', \
 					  'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country', \
 					  'collection_date', 'transl_table', 'source']  # In GenBank files, the qualifier 'collection-date' is written as 'collection_date'.
-'''
-These are selected qualifiers because we do not want to see qualifiers such as 'translation', 'transl_table', or 'codon_start' in the feature table.
-Qualifiers 'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country' belong to the feature 'source'.
-'''
+	'''
+	These are selected qualifiers because we do not want to see qualifiers such as 'translation' or 'codon_start' in the feature table.
+	Qualifiers 'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country' belong to the feature 'source'.
+	'''
 
-def main():
-	args = parse_args()  # read arguments
 	contig_num = 0
-	fasta_fh = open(args.prefix + '.fsa', 'w')  # the file handle for the fasta file
-	feature_fh = open(args.prefix + '.tbl', 'w')  # the file handle for the feature table
-	records = list(SeqIO.parse(sys.stdin, 'genbank'))  # read a GenBank file from the standard input and convert it into a list of SeqRecord objects
+	fasta_fh = open(prefix + '.fsa', 'w')  # the file handle for the fasta file
+	feature_fh = open(prefix + '.tbl', 'w')  # the file handle for the feature table
+	records = list(SeqIO.parse(input, 'genbank'))  # read a GenBank file from the standard input and convert it into a list of SeqRecord objects
 
 	for rec in records:  # for every SeqRecord object in the list 'records'
-		if len(rec) <= args.mincontigsize:  # filter out small contigs
+		if len(rec) <= mincontigsize:  # filter out small contigs
 			print('skipping small contig %s' % (rec.id), file=sys.stderr)
 			continue  # start a new 'for' loop
 		contig_num += 1
@@ -115,4 +100,4 @@ def main():
 
 # call the main function
 if __name__ == '__main__':
-	main()
+	gbk2tbl()
