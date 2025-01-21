@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # adapted from https://github.com/wanyuac/BINF_toolkit/blob/master/gbk2tbl.py
 
 """
@@ -48,7 +46,6 @@ from Bio import SeqIO
 @click.option('-i', '--input', type = str, required = True, help = 'Input genbank file')
 @click.option('-m', '--mincontigsize', type = int, required = False, default = 0, help = 'The minimum contig length')
 @click.option('-p', '--prefix', type = str, required = False, default = 'seq', help = 'The prefix of output filenames')
-
 def gbk2tbl(input, mincontigsize, prefix):
 	allowed_qualifiers = ['locus_tag', 'gene', 'product', 'pseudo', 'protein_id', 'gene_desc', 'old_locus_tag', 'note', 'inference', \
 					  'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country', \
