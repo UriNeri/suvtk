@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
 
 import os
 import sys
+import subprocess
 
 import click
 import Bio.SeqIO
@@ -10,26 +10,55 @@ import pyrodigal_gv
 from Bio.SeqIO import write
 from Bio.SeqRecord import SeqRecord
 
-fLog = None
 
-def Exec(CmdLine):
+def Exec(CmdLine, fLog=None):
     """
-    Execute a command line in a shell, logging it to a file if specified
+    Execute a command line in a shell, logging it to a file if specified,
+    or printing output to the screen if no log file is given.
 
-    :param CmdLine: the command line to execute
+    :param CmdLine: The command line to execute
     :type CmdLine: str
+    :param fLog: A file object to log the command and results, or None
+    :type fLog: file object or None
+    :return: The output of the command
+    :rtype: str
     """
-    if not fLog is None:
-        fLog.write("exec %s\n" % CmdLine)
-    Code = os.system(CmdLine)
-    if not fLog is None:
-        fLog.write("code %d\n" % Code)
-    if Code != 0:
-        sys.stderr.write("\n")
-        sys.stderr.write(CmdLine + "\n")
-        sys.stderr.write("\n")
-        sys.stderr.write("Error code %d\n" % Code)
-        assert False
+    def log_or_print(message, is_error=False):
+        """Helper to log to file or print to screen."""
+        if fLog:
+            fLog.write(message)
+        else:
+            output = sys.stderr if is_error else sys.stdout
+            output.write(message)
+
+    try:
+        # Execute the command and capture output
+        result = subprocess.run(
+            CmdLine,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        # Print or log stdout
+        if result.stdout:
+            log_or_print(result.stdout)
+        # Print or log stderr
+        if result.stderr:
+            log_or_print(result.stderr, is_error=True)
+
+        return result.stdout  # Return the command's stdout
+    except subprocess.CalledProcessError as e:
+        # Print or log error details
+        if e.stderr:
+            log_or_print(e.stderr, is_error=True)
+        log_or_print(f"code {e.returncode}\n")
+        log_or_print("\n")
+        log_or_print(f"{CmdLine}\n")
+        log_or_print("\n")
+        log_or_print(f"Error code {e.returncode}\n", is_error=True)
+
+        raise  # Re-raise the exception to notify the caller
 
 def calculate_coding_capacity(genes, seq_length):
         """Calculate the total coding capacity for a list of genes."""
@@ -149,14 +178,16 @@ def save_ncbi_feature_tables(df, output_dir="./"):
                     protein = "hypothetical protein"
 
                 file.write(f"\t\t\tproduct\t{protein}\n")
-                file.write(f"\t\t\tnote\tORF prediction: {row['source']}\n")
+                file.write(f"\t\t\tinference\tab initio prediction:{row['source']}\n")
 
                 if row["start_codon"] != "ATG":
                     file.write(
                         f"\t\t\tnote\tAlternative start codon: {row['start_codon']}\n"
                     )
                 if protein != "hypothetical protein":
-                    file.write(f"\t\t\tnote\tAnnotation database: {row['annotation_source']}\n")
+                    #file.write(f"\t\t\tnote\tAnnotation database: {row['annotation_source']}\n")
+                    #TODO: capture diamond version -> OK?
+                    file.write((f"\t\t\tinference\talignment:Diamond:{row['diamond_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"))
 
         print(f"Saved: {filename}")
 
@@ -164,6 +195,7 @@ def save_ncbi_feature_tables(df, output_dir="./"):
 @click.option('-i', '--input-file', 'fasta_file', required=True, type=click.Path(exists=True), help='Input fasta file')
 @click.option('-o', '--output-path', 'output_path', required=True, type=click.Path(exists=False), help='Output directory')
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='BFVD diamond database path')
+@click.option('--translation-table', 'transl_table', required=False, type=int, default=1, help='Translation table to use')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
 def main(fasta_file, output_path, database, threads):
     records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
@@ -234,9 +266,10 @@ def main(fasta_file, output_path, database, threads):
 
     df["seqid"] = df["seqid"].str.strip()
     df["type"] = "CDS"
-    #df["source"] = f"pyrodigal-gv {pyrodigal_gv.__version__}"
-    df["source"] = f"pyrodigal-gv"
-    df["annotation_source"]=f"BFVD (https://doi.org/10.1093/nar/gkae1119)"
+    df["source"] = f"pyrodigal-gv:{pyrodigal_gv.__version__}"
+    #df["source"] = f"pyrodigal-gv"
+    #df["annotation_source"]=f"BFVD (https://doi.org/10.1093/nar/gkae1119)"
+    df["annotation_source"]="UniProtKB"
 
     Cmd = "diamond blastp "
     Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
@@ -250,6 +283,10 @@ def main(fasta_file, output_path, database, threads):
     Cmd += "--tmpdir /dev/shm "
     Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"
     Exec(Cmd)
+
+    diamond_version = Exec("diamond version")
+    diamond_version = diamond_version.strip().split()[2]
+
 
     m8 = pd.read_csv("gb_sub_proteins.m8", sep="\t", header=None)
     m8.rename(
@@ -274,6 +311,8 @@ def main(fasta_file, output_path, database, threads):
 
 
     m8=m8[m8["evalue"]<1e-3]
+
+    m8['diamond_version'] = diamond_version
 
     m8_top = select_top_structure(m8)
     names_df = pd.read_csv(f"{database}/bfvd_uniprot_names.tsv", sep="\t")
@@ -303,7 +342,7 @@ def main(fasta_file, output_path, database, threads):
 
     prot_df = pd.merge(m8_top, merged_df, left_on="target", right_on="model", how="left")
 
-    prot_df["Protein names"]
+    #prot_df["Protein names"]
 
     prot_df.to_csv("diamond_names.tsv", sep="\t", index=False)
 
