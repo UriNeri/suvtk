@@ -195,13 +195,13 @@ def save_ncbi_feature_tables(df, output_dir="./"):
 @click.option('-i', '--input-file', 'fasta_file', required=True, type=click.Path(exists=True), help='Input fasta file')
 @click.option('-o', '--output-path', 'output_path', required=True, type=click.Path(exists=False), help='Output directory')
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='BFVD diamond database path')
-@click.option('--translation-table', 'transl_table', required=False, type=int, default=1, help='Translation table to use')
+@click.option('-g', '--translation-table', 'transl_table', required=False, type=int, default=1, help='Translation table to use')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
-def features(fasta_file, output_path, database, threads):
+def features(fasta_file, output_path, database, transl_table, threads):
     records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
 
     orf_finder = pyrodigal_gv.ViralGeneFinder()
-    training_info = orf_finder.train(*(bytes(seq.seq) for seq in records), translation_table=1)
+    training_info = orf_finder.train(*(bytes(seq.seq) for seq in records), translation_table=transl_table)
 
 
     orf_finder = pyrodigal_gv.ViralGeneFinder(
