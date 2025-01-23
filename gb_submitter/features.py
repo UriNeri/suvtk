@@ -1,4 +1,3 @@
-
 import os
 import sys
 import subprocess
@@ -255,7 +254,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
 
         results.extend(seq_results)
     
-    with open('no_ORF_prediction.txt', 'w') as f:
+    with open(f'{output_path}/no_ORF_prediction.txt', 'w') as f:
         for line in no_orf_pred:
             f.write(f"{line}\n")
 
@@ -274,7 +273,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
     Cmd = "diamond blastp "
     Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
     Cmd += f"--query {output_path}/proteins.faa "
-    Cmd += "--out gb_sub_proteins.m8 "
+    Cmd += f"--out {output_path}/gb_sub_proteins.m8 "
     Cmd += f"--threads {threads} "
     Cmd += "--sensitive "
     Cmd += "--index-chunks 1 "
@@ -344,7 +343,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
 
     #prot_df["Protein names"]
 
-    prot_df.to_csv("diamond_names.tsv", sep="\t", index=False)
+    prot_df.to_csv(f"{output_path}/diamond_names.tsv", sep="\t", index=False)
 
     diamond = prot_df
     final_df = pd.merge(df, diamond, left_on="orf", right_on="query", how="left")  
