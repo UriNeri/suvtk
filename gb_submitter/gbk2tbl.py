@@ -1,7 +1,7 @@
 # adapted from https://github.com/wanyuac/BINF_toolkit/blob/master/gbk2tbl.py
 
 """
-This script converts a GenBank file (.gbk or .gb) from Stdin into a Sequin feature table (.tbl), which is an input file of tbl2asn used for creating an ASN.1 file (.sqn).
+This script converts a GenBank file (.gbk or .gb) from Stdin into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn).
 
 Package requirement: BioPython and argparse
 
@@ -42,7 +42,7 @@ import sys
 import click
 from Bio import SeqIO
 
-@click.command()
+@click.command(help="Convert a GenBank file (.gbk or .gb) from Stdin into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn).")
 @click.option('-i', '--input', type = str, required = True, help = 'Input genbank file')
 @click.option('-m', '--mincontigsize', type = int, required = False, default = 0, help = 'The minimum contig length')
 @click.option('-p', '--prefix', type = str, required = False, default = 'seq', help = 'The prefix of output filenames')
