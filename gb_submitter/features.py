@@ -1,63 +1,14 @@
+#TODO: make output path if doesnt exist 
+#TODO: add help info
+#TODO: do not reverse complement when negarnaviricota ==> see taxonomy script(?)
 import os
-import sys
-import subprocess
 
 import click
 import Bio.SeqIO
 import pandas as pd
 import pyrodigal_gv
 from Bio.SeqIO import write
-from Bio.SeqRecord import SeqRecord
-
-
-def Exec(CmdLine, fLog=None):
-    """
-    Execute a command line in a shell, logging it to a file if specified,
-    or printing output to the screen if no log file is given.
-
-    :param CmdLine: The command line to execute
-    :type CmdLine: str
-    :param fLog: A file object to log the command and results, or None
-    :type fLog: file object or None
-    :return: The output of the command
-    :rtype: str
-    """
-    def log_or_print(message, is_error=False):
-        """Helper to log to file or print to screen."""
-        if fLog:
-            fLog.write(message)
-        else:
-            output = sys.stderr if is_error else sys.stdout
-            output.write(message)
-
-    try:
-        # Execute the command and capture output
-        result = subprocess.run(
-            CmdLine,
-            shell=True,
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        # Print or log stdout
-        if result.stdout:
-            log_or_print(result.stdout)
-        # Print or log stderr
-        if result.stderr:
-            log_or_print(result.stderr, is_error=True)
-
-        return result.stdout  # Return the command's stdout
-    except subprocess.CalledProcessError as e:
-        # Print or log error details
-        if e.stderr:
-            log_or_print(e.stderr, is_error=True)
-        log_or_print(f"code {e.returncode}\n")
-        log_or_print("\n")
-        log_or_print(f"{CmdLine}\n")
-        log_or_print("\n")
-        log_or_print(f"Error code {e.returncode}\n", is_error=True)
-
-        raise  # Re-raise the exception to notify the caller
+from gb_submitter import utils
 
 def calculate_coding_capacity(genes, seq_length):
         """Calculate the total coding capacity for a list of genes."""
@@ -185,16 +136,16 @@ def save_ncbi_feature_tables(df, output_dir="./"):
                     )
                 if protein != "hypothetical protein":
                     #file.write(f"\t\t\tnote\tAnnotation database: {row['annotation_source']}\n")
-                    #TODO: capture diamond version -> OK?
                     file.write((f"\t\t\tinference\talignment:Diamond:{row['diamond_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"))
 
         print(f"Saved: {filename}")
 
-@click.command()
+@click.command(help="Create feature tables for sequences.")
 @click.option('-i', '--input-file', 'fasta_file', required=True, type=click.Path(exists=True), help='Input fasta file')
 @click.option('-o', '--output-path', 'output_path', required=True, type=click.Path(exists=False), help='Output directory')
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='BFVD diamond database path')
-@click.option('-g', '--translation-table', 'transl_table', required=False, type=int, default=1, help='Translation table to use')
+#TODO: limit genetic codes?
+@click.option('-g', '--translation-table', 'transl_table', required=False, type=click.Choice(list(range(1, 32))), default=1, metavar="<1-31>", help='Translation table to use')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
 def features(fasta_file, output_path, database, transl_table, threads):
     records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
@@ -281,9 +232,9 @@ def features(fasta_file, output_path, database, transl_table, threads):
     Cmd += "--unal 1 "
     Cmd += "--tmpdir /dev/shm "
     Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"
-    Exec(Cmd)
+    utils.Exec(Cmd)
 
-    diamond_version = Exec("diamond version")
+    diamond_version = utils.Exec("diamond version")
     diamond_version = diamond_version.strip().split()[2]
 
 
