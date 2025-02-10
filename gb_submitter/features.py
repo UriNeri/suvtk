@@ -136,7 +136,7 @@ def save_ncbi_feature_tables(df, output_dir="./"):
                     )
                 if protein != "hypothetical protein":
                     #file.write(f"\t\t\tnote\tAnnotation database: {row['annotation_source']}\n")
-                    file.write((f"\t\t\tinference\talignment:Diamond:{row['diamond_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"))
+                    file.write((f"\t\t\tinference\talignment:{row['aligner']}:{row['aligner_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"))
 
         print(f"Saved: {filename}")
 
@@ -221,22 +221,35 @@ def features(fasta_file, output_path, database, transl_table, threads):
     #df["annotation_source"]=f"BFVD (https://doi.org/10.1093/nar/gkae1119)"
     df["annotation_source"]="UniProtKB"
 
-    Cmd = "diamond blastp "
-    Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
-    Cmd += f"--query {output_path}/proteins.faa "
-    Cmd += f"--out {output_path}/gb_sub_proteins.m8 "
-    Cmd += f"--threads {threads} "
-    Cmd += "--sensitive "
-    Cmd += "--index-chunks 1 "
-    Cmd += "--block-size 8 "
-    Cmd += "--unal 1 "
-    Cmd += "--tmpdir /dev/shm "
-    Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"
-    utils.Exec(Cmd)
+    #Cmd = "diamond blastp "
+    #Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
+    #Cmd += f"--query {output_path}/proteins.faa "
+    #Cmd += f"--out {output_path}/gb_sub_proteins.m8 "
+    #Cmd += f"--threads {threads} "
+    #Cmd += "--sensitive "
+    #Cmd += "--index-chunks 1 "
+    #Cmd += "--block-size 8 "
+    #Cmd += "--unal 1 "
+    #Cmd += "--tmpdir /dev/shm "
+    #Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"
+    #utils.Exec(Cmd)
+#
+    #aligner = "Diamond"
+    #aligner_version = utils.Exec("diamond version")
+    #aligner_version = aligner_version.strip().split()[2]
 
-    diamond_version = utils.Exec("diamond version")
-    diamond_version = diamond_version.strip().split()[2]
+    Cmd = "mmseqs easy-search "
+    Cmd += f"{output_path}/proteins.faa " #input
+    Cmd += f"{database}/foldseek_db" # database TODO: fix path
+    Cmd += f"{output_path}/gb_sub_proteins.m8 " #output
+    Cmd += "tmp " #temp directory
+    Cmd += "-s 7.5 "
+    Cmd += "--format-mode 4 "
+    Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,theader "
+    Cmd += f"--threads {threads}"
 
+    aligner = "MMseqs2"
+    aligner_version = utils.Exec("mmseqs version")
 
     m8 = pd.read_csv("gb_sub_proteins.m8", sep="\t", header=None)
     m8.rename(
@@ -262,7 +275,8 @@ def features(fasta_file, output_path, database, transl_table, threads):
 
     m8=m8[m8["evalue"]<1e-3]
 
-    m8['diamond_version'] = diamond_version
+    m8['aligner'] = aligner
+    m8['aligner_version'] = aligner_version
 
     m8_top = select_top_structure(m8)
     names_df = pd.read_csv(f"{database}/bfvd_uniprot_names.tsv", sep="\t")
