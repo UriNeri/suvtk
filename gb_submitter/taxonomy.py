@@ -6,7 +6,7 @@ from gb_submitter import utils
 @click.option('-i', '--input-file', 'fasta_file', required=True, type=click.Path(exists=True), help='Input fasta file')
 @click.option('-o', '--output-path', 'output_path', required=True, type=click.Path(exists=False), help='Output directory')
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='ICTV MMseqs database path')
-@click.option('-s', '--identity', 'seqid', required=False, default=0.7, type=float, help='Minimum sequence identity for hits to be considered')
+@click.option('-s', '--identity', 'seqid', required=False, default=0.3, type=float, help='Minimum sequence identity for hits to be considered')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
 def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd = 'mmseqs easy-taxonomy '
@@ -25,7 +25,8 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     for index, row in taxonomy.iterrows():
         if row[2] == "no rank":
             print(f"No taxonomy for {row[0]}")
-        elif row[2] == "species":
+            last_known = "unknown"
+        elif row[2] == "species": # Fix issue when species contains sp.
             last_known = row[8].split(";")[-2].replace("g_", "")
             last_known += " sp."
         else:
