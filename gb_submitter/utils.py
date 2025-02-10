@@ -1,7 +1,7 @@
 import sys
 import subprocess
 
-def Exec(CmdLine, fLog=None):
+def Exec(CmdLine, fLog=None, capture=False):
     """
     Execute a command line in a shell, logging it to a file if specified,
     or printing output to the screen if no log file is given.
@@ -26,7 +26,7 @@ def Exec(CmdLine, fLog=None):
         result = subprocess.run(
             CmdLine,
             shell=True,
-            capture_output=True,
+            capture_output=capture,
             text=True,
             check=True
         )

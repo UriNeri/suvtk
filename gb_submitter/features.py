@@ -235,7 +235,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
     #utils.Exec(Cmd)
 #
     #aligner = "Diamond"
-    #aligner_version = utils.Exec("diamond version")
+    #aligner_version = utils.Exec("diamond version", capture=True)
     #aligner_version = aligner_version.strip().split()[2]
 
     Cmd = "mmseqs easy-search "
@@ -249,7 +249,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
     Cmd += f"--threads {threads}"
 
     aligner = "MMseqs2"
-    aligner_version = utils.Exec("mmseqs version")
+    aligner_version = utils.Exec("mmseqs version", capture=True)
 
     m8 = pd.read_csv("gb_sub_proteins.m8", sep="\t", header=None)
     m8.rename(
