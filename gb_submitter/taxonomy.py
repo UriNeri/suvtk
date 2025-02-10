@@ -9,6 +9,8 @@ from gb_submitter import utils
 @click.option('-s', '--identity', 'seqid', required=False, default=0.3, type=float, help='Minimum sequence identity for hits to be considered')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
 def taxonomy(fasta_file, database, output_path, seqid, threads):
+    # Add RAM restrictions?
+    # Add error handling
     Cmd = 'mmseqs easy-taxonomy '
     Cmd += f'{fasta_file} '
     Cmd += f'{database} '
@@ -32,7 +34,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         else:
             last_known = row[3].strip()
             last_known += " sp."
-        tax_names.append([row[1], last_known])
+        tax_names.append([row[0], last_known])
 
     tax_df = pd.DataFrame(tax_names, columns=['contig', 'taxonomy'])
     tax_df.to_csv(f'{output_path}/taxonomy.tsv', sep='\t', index=False)        
