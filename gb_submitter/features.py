@@ -231,7 +231,7 @@ def features(fasta_file, output_path, database, transl_table, threads):
     #Cmd += "--block-size 8 "
     #Cmd += "--unal 1 "
     #Cmd += "--tmpdir /dev/shm "
-    #Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle"
+    #Cmd += "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
     #utils.Exec(Cmd)
 #
     #aligner = "Diamond"
@@ -240,12 +240,12 @@ def features(fasta_file, output_path, database, transl_table, threads):
 
     Cmd = "mmseqs easy-search "
     Cmd += f"{output_path}/proteins.faa " #input
-    Cmd += f"{database}/foldseek_db" # database TODO: fix path
+    Cmd += f"{database}/foldseek_db/bfvd" # database
     Cmd += f"{output_path}/gb_sub_proteins.m8 " #output
     Cmd += "tmp " #temp directory
     Cmd += "-s 7.5 "
     Cmd += "--format-mode 4 "
-    Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,theader "
+    Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits "
     Cmd += f"--threads {threads}"
 
     aligner = "MMseqs2"
@@ -262,11 +262,10 @@ def features(fasta_file, output_path, database, transl_table, threads):
             5: "gapopen",
             6: "qstart",
             7: "qend",
-            8: "sstart",
-            9: "send",
+            8: "tstart",
+            9: "tend",
             10: "evalue",
             11: "bits",
-            12: "stitle",
         },
         axis=1,
         inplace=True,
