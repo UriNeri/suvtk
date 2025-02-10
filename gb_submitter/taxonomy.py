@@ -8,7 +8,7 @@ from gb_submitter import utils
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='ICTV MMseqs database path')
 @click.option('-s', '--identity', 'seqid', required=False, default=0.7, type=float, help='Minimum sequence identity for hits to be considered')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
-def taxonomy(fasta_file, database, output_path, seqid):
+def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd = 'mmseqs easy-taxonomy '
     Cmd += f'{fasta_file} '
     Cmd += f'{database} '
@@ -16,6 +16,7 @@ def taxonomy(fasta_file, database, output_path, seqid):
     Cmd += 'tmp '
     Cmd += '--blacklist "" --tax-lineage 1'
     Cmd += f'--min-seq-id {seqid} '
+    Cmd += f'--threads {threads}'
     utils.Exec(Cmd)
 
     taxonomy = pd.read_csv(f"{output_path}/taxresults_lca.tsv", sep="\t", header=None)
