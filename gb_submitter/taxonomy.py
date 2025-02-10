@@ -6,13 +6,16 @@ from gb_submitter import utils
 @click.option('-i', '--input-file', 'fasta_file', required=True, type=click.Path(exists=True), help='Input fasta file')
 @click.option('-o', '--output-path', 'output_path', required=True, type=click.Path(exists=False), help='Output directory')
 @click.option('-d', '--database', 'database', required=True, type=click.Path(exists=True), help='ICTV MMseqs database path')
+@click.option('-s', '--identity', 'seqid', required=False, default=0.7, type=float, help='Minimum sequence identity for hits to be considered')
 @click.option('-t', '--threads', 'threads', required=False, default=4, type=int, help='Number of threads to use')
-def taxonomy(fasta_file, database, output_path):
-    Cmd = "mmseqs easy-taxonomy "
-    Cmd += f"{fasta_file} "
-    Cmd += f"{database} "
-    Cmd += f"{output_path}/taxresults "
-    Cmd += "tmp --blacklist "" --tax-lineage 1"
+def taxonomy(fasta_file, database, output_path, seqid):
+    Cmd = 'mmseqs easy-taxonomy '
+    Cmd += f'{fasta_file} '
+    Cmd += f'{database} '
+    Cmd += f'{output_path}/taxresults '
+    Cmd += 'tmp '
+    Cmd += '--blacklist "" --tax-lineage 1'
+    Cmd += f'--min-seq-id {seqid} '
     utils.Exec(Cmd)
 
     taxonomy = pd.read_csv(f"{output_path}/taxresults_lca.tsv", sep="\t", header=None)
