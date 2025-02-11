@@ -54,8 +54,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd += f"{database} "
     Cmd += f"{output_path}/taxresults "
     Cmd += "tmp "
-    Cmd += '-s 5.7 --blacklist "" --tax-lineage 1 --remove-tmp-files 0 '
-    # Cmd += f'--min-seq-id {seqid} '
+    Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
     Cmd += f"--threads {threads}"
     utils.Exec(Cmd)
 
