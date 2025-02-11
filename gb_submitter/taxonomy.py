@@ -109,7 +109,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
             last_known += " sp."
         else:
             if (
-                row["rank"] == "genus" and row["pident"] < 70  # check best cutoff
+                row["rank"] == "genus" and row["pident"] < seqid  # check best cutoff
             ):  # if genus rank and sequence identity is lower than 70% get family assignment
                 last_known = row["lineage"].split(";")[-2].replace("f_", "")
                 last_known += " sp."
