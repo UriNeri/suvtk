@@ -54,7 +54,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd += f"{database} "
     Cmd += f"{output_path}/taxresults "
     Cmd += "tmp "
-    Cmd += '--blacklist "" --tax-lineage 1 --remove-tmp-files 0 '
+    Cmd += '-s 5.7 --blacklist "" --tax-lineage 1 --remove-tmp-files 0 '
     # Cmd += f'--min-seq-id {seqid} '
     Cmd += f"--threads {threads}"
     utils.Exec(Cmd)
@@ -96,7 +96,11 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         inplace=True,
     )
 
-    merged = pd.merge(taxonomy, tophit, on="query", how="left")
+    # Select top hits
+    highest_bits_idx = tophit.groupby("query")["bits"].idxmax()
+    top_tophit = tophit.loc[highest_bits_idx]
+
+    merged = pd.merge(taxonomy, top_tophit, on="query", how="left")
 
     tax_names = []
     for index, row in merged.iterrows():
