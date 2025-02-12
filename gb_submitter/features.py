@@ -1,7 +1,5 @@
 # TODO: add help info
-# TODO: do not reverse complement when negarnaviricota ==> see taxonomy script(?)
 import os
-import warnings
 
 import Bio.SeqIO
 import click
@@ -115,70 +113,72 @@ def get_lineage(record_id, taxonomy_data, taxdb):
 
 
 # Function to generate and save NCBI feature tables
-def save_ncbi_feature_tables(df, output_dir="./"):
+# Function to generate and save NCBI feature tables
+def save_ncbi_feature_tables(df, output_dir="./", single_file=True):
     """
     Generate and save NCBI feature tables for sequences in a DataFrame.
 
-    This function creates feature table files for each unique sequence ID
-    in the input DataFrame and saves them in the specified output directory.
-    Each feature table file is named using the accession number of the sequence.
-    The content includes feature annotations such as CDS type, product name,
-    and notes about ORF predictions and alternative start codons.
+    This function creates a single feature table file by default, but can
+    also save separate files for each unique sequence ID when specified.
 
     Parameters:
     df (pd.DataFrame): DataFrame containing sequence data with columns
                        ['seqid', 'accession', 'start', 'end', 'strand', 'type',
                         'Protein names', 'source', 'start_codon', 'partial_begin', 'partial_end'].
     output_dir (str): Directory path to save the feature tables. Defaults to "./".
-
+    single_file (bool): If True, saves all features to one file; otherwise, saves separate files.
     """
-    os.makedirs(output_dir, exist_ok=True)
 
-    for seqid, group in df.groupby("seqid"):
-        accession = group["seqid"].iloc[0]
-        filename = f"{output_dir}{accession}.tbl"
+    if single_file:
+        filename = os.path.join(output_dir, "featuretable.tbl")
         with open(filename, "w") as file:
-            file.write(f">Feature {accession}\n")
-            for _, row in group.iterrows():
-                end = row["end"]
-                start = row["start"]
-                if row["partial_end"]:
-                    # This should not be possible with extended pyrodigal enforcing start codon (?)
-                    if row["strand"] == -1:
-                        end = f"<{row['end']}"
-                    # This is fine
-                    else:
-                        end = f">{row['end']}"
-                elif row["partial_begin"]:
-                    if row["strand"] == -1:
-                        start = f">{row['start']}"
+            for seqid, group in df.groupby("seqid"):
+                accession = group["seqid"].iloc[0]
+                file.write(f">Feature {accession}\n")
+                write_feature_entries(file, group)
+        click.echo(f"Saved: {filename}")
 
-                if row["strand"] == -1:
-                    file.write(f"{end}\t{start}\t{row['type']}\n")
-                else:
-                    file.write(f"{start}\t{end}\t{row['type']}\n")
+    else:
+        os.makedirs(os.path.join(output_dir, "feature_tables"), exist_ok=True)
+        for seqid, group in df.groupby("seqid"):
+            accession = group["seqid"].iloc[0]
+            filename = os.path.join(output_dir, "feature_tables", f"{accession}.tbl")
+            with open(filename, "w") as file:
+                file.write(f">Feature {accession}\n")
+                write_feature_entries(file, group)
+            click.echo(f"Saved: {filename}")
 
-                if pd.notna(row["Protein names"]):
-                    protein = row["Protein names"]
-                else:
-                    protein = "hypothetical protein"
 
-                file.write(f"\t\t\tproduct\t{protein}\n")
-                file.write(f"\t\t\tinference\tab initio prediction:{row['source']}\n")
+def write_feature_entries(file, group):
+    """Helper function to write feature entries to a file."""
+    for _, row in group.iterrows():
+        start, end = row["start"], row["end"]
 
-                if row["start_codon"] != "ATG":
-                    file.write(
-                        f"\t\t\tnote\tAlternative start codon: {row['start_codon']}\n"
-                    )
-                if protein != "hypothetical protein":
-                    # file.write(f"\t\t\tnote\tAnnotation database: {row['annotation_source']}\n")
-                    file.write(
-                        (
-                            f"\t\t\tinference\talignment:{row['aligner']}:{row['aligner_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"
-                        )
-                    )
+        if row["partial_end"]:
+            end = f"<{row['end']}" if row["strand"] == -1 else f">{row['end']}"
+        if row["partial_begin"] and row["strand"] == -1:
+            start = f">{row['start']}"
 
-        print(f"Saved: {filename}")
+        file.write(
+            f"{end}\t{start}\t{row['type']}\n"
+            if row["strand"] == -1
+            else f"{start}\t{end}\t{row['type']}\n"
+        )
+
+        protein = (
+            row["Protein names"]
+            if pd.notna(row["Protein names"])
+            else "hypothetical protein"
+        )
+        file.write(f"\t\t\tproduct\t{protein}\n")
+        file.write(f"\t\t\tinference\tab initio prediction:{row['source']}\n")
+
+        if row["start_codon"] != "ATG":
+            file.write(f"\t\t\tnote\tAlternative start codon: {row['start_codon']}\n")
+        if protein != "hypothetical protein":
+            file.write(
+                f"\t\t\tinference\talignment:{row['aligner']}:{row['aligner_version']}:UniProtKB:{row['Uniref_entry']},BFVD:{row['model']}\n"
+            )
 
 
 @click.command(help="Create feature tables for sequences.")
@@ -224,6 +224,12 @@ def save_ncbi_feature_tables(df, output_dir="./"):
     help="Taxonomy file",
 )
 @click.option(
+    "--separate-files",
+    required=False,
+    is_flag=True,
+    help="Save feature tables into separate files",
+)
+@click.option(
     "-t",
     "--threads",
     "threads",
@@ -232,9 +238,11 @@ def save_ncbi_feature_tables(df, output_dir="./"):
     type=int,
     help="Number of threads to use",
 )
-def features(fasta_file, output_path, database, transl_table, taxonomy, threads):
+def features(
+    fasta_file, output_path, database, transl_table, taxonomy, separate_files, threads
+):
     if os.path.exists(output_path):
-        warnings.warn(
+        click.echo(
             f"Warning: Output directory '{output_path}' already exists and may be overwritten."
         )
 
@@ -280,7 +288,7 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
 
         # If coding capacity is too low, use orf_finder2 instead
         if coding_capacity <= 0.5:
-            # print(f"Repredicting ORFs for {record.id} due to low coding capacity.")
+            # click.echo(f"Repredicting ORFs for {record.id} due to low coding capacity.")
             genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
                 orf_finder2, record.seq
             )
@@ -300,7 +308,7 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
             overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
         else:
             no_orf_pred.append(record.id)
-            # print(
+            # click.echo(
             #    f"No ORF predictions with start site and >50% coding capacity for {record.id}."
             # )
 
@@ -434,10 +442,10 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
     diamond = prot_df
     final_df = pd.merge(df, diamond, left_on="orf", right_on="query", how="left")
 
+    single_file = False if separate_files else True
     # Call the function to save feature tables
     save_ncbi_feature_tables(
-        final_df,
-        output_dir=f"{output_path}/feature_tables/",
+        final_df, output_dir=f"{output_path}", single_file=single_file
     )
 
 
