@@ -442,9 +442,7 @@ def features(
 
     # prot_df["Protein names"]
 
-    prot_df.to_csv(
-        f"{output_path}/diamond_names.tsv", sep="\t", index=False  # TODO change name
-    )
+    prot_df.to_csv(f"{output_path}/tophit_info.tsv", sep="\t", index=False)
 
     diamond = prot_df
     final_df = pd.merge(df, diamond, left_on="orf", right_on="query", how="left")
