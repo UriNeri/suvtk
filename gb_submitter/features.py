@@ -1,4 +1,3 @@
-# TODO: add help info
 import os
 
 import Bio.SeqIO
@@ -112,8 +111,7 @@ def get_lineage(record_id, taxonomy_data, taxdb):
     return lineage
 
 
-# Function to generate and save NCBI feature tables
-# Function to generate and save NCBI feature tables
+# Functions to generate and save NCBI feature tables
 def save_ncbi_feature_tables(df, output_dir="./", single_file=True):
     """
     Generate and save NCBI feature tables for sequences in a DataFrame.
@@ -360,7 +358,7 @@ def features(
     Cmd += f"{output_path}/gb_sub_proteins.m8 "  # output
     Cmd += "tmp "  # temp directory
     Cmd += "-s 7.5 "
-    Cmd += "--format-mode 4 "
+    Cmd += "--format-mode 0 "
     Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits "
     Cmd += f"--threads {threads}"
 
@@ -370,7 +368,9 @@ def features(
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
 
     m8 = pd.read_csv(
-        f"{output_path}/gb_sub_proteins.m8", sep="\t", header=None, low_memory=False
+        f"{output_path}/gb_sub_proteins.m8",
+        sep="\t",
+        header=None,
     )
     m8.rename(
         {
@@ -391,7 +391,6 @@ def features(
         inplace=True,
     )
 
-    m8["evalue"] = pd.to_numeric(m8["evalue"], errors="coerce")
     m8 = m8[m8["evalue"] < 1e-3]
 
     m8["aligner"] = aligner
