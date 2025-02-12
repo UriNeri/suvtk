@@ -113,15 +113,20 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
             last_known += " sp."
         else:
             if (
-                row["rank"] == "genus" and row["pident"] < seqid  # check best cutoff
-            ):  # if genus rank and sequence identity is lower than 70% get family assignment
+                row["rank"] == "genus"
+                and row["pident"] < seqid  # TODO check best cutoff
+            ):  # if genus rank and sequence identity is lower than 70% (seqid) get family assignment
                 last_known = row["lineage"].split(";")[-2].replace("f_", "")
                 last_known += " sp."
             else:
                 last_known = row["name"].strip()
                 last_known += " sp."
         tax_names.append(
-            [row["query"], last_known, row["taxid"]]  # taxid is not equal to last_known
+            [
+                row["query"],
+                last_known,
+                row["taxid"],
+            ]  # taxid is not equal to last_known (eg. species taxid -> last_known is max genus level)
         )
 
     tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy", "taxid"])
