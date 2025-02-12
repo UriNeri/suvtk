@@ -14,6 +14,7 @@ dependencies = [
     "click",
     "pandas>=2.0.3",
     "pyrodigal-gv>=0.3.2",
+    "taxopy>=0.14.0",
 ]
 
 [build-system]

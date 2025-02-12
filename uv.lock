@@ -147,6 +147,7 @@ dependencies = [
     { name = "pandas", version = "2.0.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pandas", version = "2.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pyrodigal-gv" },
+    { name = "taxopy" },
 ]
 
 [package.optional-dependencies]
@@ -161,6 +162,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.0.3" },
     { name = "pyrodigal-gv", specifier = ">=0.3.2" },
     { name = "pytest", marker = "extra == 'test'" },
+    { name = "taxopy", specifier = ">=0.14.0" },
 ]
 
 [[package]]
@@ -576,6 +578,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050 },
+]
+
+[[package]]
+name = "taxopy"
+version = "0.14.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/67/92ec274c4a445f8dc7043c0116af84c49152a5f6e007ee370faee21c74c3/taxopy-0.14.0.tar.gz", hash = "sha256:c39c4c4330b322f2e0505de45c2980a53eb945f8129fc679dd655a093042dbe6", size = 33066 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/98/06ba4db905613fa24d227bc81219b7b2e6d48f803eac407d86f2ca54991d/taxopy-0.14.0-py3-none-any.whl", hash = "sha256:1dabbd091d0be081462d03d57ad0143c73273897ec2e2dfba53758bd24e65ee5", size = 25520 },
 ]
 
 [[package]]
