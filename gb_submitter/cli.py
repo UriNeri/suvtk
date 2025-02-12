@@ -2,9 +2,7 @@ from gettext import gettext as _
 
 import click
 
-from gb_submitter.features import features
-from gb_submitter.gbk2tbl import gbk2tbl
-from gb_submitter.taxonomy import taxonomy
+from gb_submitter import features, gbk2tbl, taxonomy
 
 
 class FullHelpGroup(click.Group):
