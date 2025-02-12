@@ -38,63 +38,114 @@ Licence: GNU GPL 2.1
 """
 
 from __future__ import print_function
+
 import sys
+
 import click
 from Bio import SeqIO
 
-@click.command(help="Convert a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn).")
-@click.option('-i', '--input', type = str, required = True, help = 'Input genbank file')
-@click.option('-m', '--mincontigsize', type = int, required = False, default = 0, help = 'The minimum contig length')
-@click.option('-p', '--prefix', type = str, required = False, default = 'seq', help = 'The prefix of output filenames')
+
+@click.command(
+    help="Convert a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn)."
+)
+@click.option("-i", "--input", type=str, required=True, help="Input genbank file")
+@click.option(
+    "-m",
+    "--mincontigsize",
+    type=int,
+    required=False,
+    default=0,
+    help="The minimum contig length",
+)
+@click.option(
+    "-p",
+    "--prefix",
+    type=str,
+    required=False,
+    default="seq",
+    help="The prefix of output filenames",
+)
 def gbk2tbl(input, mincontigsize, prefix):
-	allowed_qualifiers = ['locus_tag', 'gene', 'product', 'pseudo', 'protein_id', 'gene_desc', 'old_locus_tag', 'note', 'inference', \
-					  'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country', \
-					  'collection_date', 'transl_table', 'source']  # In GenBank files, the qualifier 'collection-date' is written as 'collection_date'.
-	'''
+    allowed_qualifiers = [
+        "locus_tag",
+        "gene",
+        "product",
+        "pseudo",
+        "protein_id",
+        "gene_desc",
+        "old_locus_tag",
+        "note",
+        "inference",
+        "organism",
+        "mol_type",
+        "strain",
+        "sub_species",
+        "isolation-source",
+        "country",
+        "collection_date",
+        "transl_table",
+        "source",
+    ]  # In GenBank files, the qualifier 'collection-date' is written as 'collection_date'.
+    """
 	These are selected qualifiers because we do not want to see qualifiers such as 'translation' or 'codon_start' in the feature table.
 	Qualifiers 'organism', 'mol_type', 'strain', 'sub_species', 'isolation-source', 'country' belong to the feature 'source'.
-	'''
+	"""
 
-	contig_num = 0
-	fasta_fh = open(prefix + '.fsa', 'w')  # the file handle for the fasta file
-	feature_fh = open(prefix + '.tbl', 'w')  # the file handle for the feature table
-	records = list(SeqIO.parse(input, 'genbank'))  # read a GenBank file from the standard input and convert it into a list of SeqRecord objects
+    contig_num = 0
+    fasta_fh = open(prefix + ".fsa", "w")  # the file handle for the fasta file
+    feature_fh = open(prefix + ".tbl", "w")  # the file handle for the feature table
+    records = list(
+        SeqIO.parse(input, "genbank")
+    )  # read a GenBank file from the standard input and convert it into a list of SeqRecord objects
 
-	for rec in records:  # for every SeqRecord object in the list 'records'
-		if len(rec) <= mincontigsize:  # filter out small contigs
-			print('skipping small contig %s' % (rec.id), file=sys.stderr)
-			continue  # start a new 'for' loop
-		contig_num += 1
-		print(rec.name)  # print the contig name to STDOUT
-		
-		# write the fasta file 
-		SeqIO.write([rec], fasta_fh, 'fasta')  # Prints this contig's sequence to the fasta file. The sequence header will be rec.description.
+    for rec in records:  # for every SeqRecord object in the list 'records'
+        if len(rec) <= mincontigsize:  # filter out small contigs
+            print("skipping small contig %s" % (rec.id), file=sys.stderr)
+            continue  # start a new 'for' loop
+        contig_num += 1
+        print(rec.name)  # print the contig name to STDOUT
 
-		# write the feature table
-		print('>Feature %s' % (rec.name), file = feature_fh)  # write the first line of this record in the feature table: the LOCUS name
-		for f in rec.features:
-			# print the coordinates
-			if f.location.strand == 1:
-				print('%d\t%d\t%s' % (f.location.start + 1, f.location.end, f.type), file = feature_fh)
-			else:
-				print('%d\t%d\t%s' % (f.location.end, f.location.start + 1, f.type), file = feature_fh)
+        # write the fasta file
+        SeqIO.write(
+            [rec], fasta_fh, "fasta"
+        )  # Prints this contig's sequence to the fasta file. The sequence header will be rec.description.
 
-			if (f.type == 'CDS') and ('product' not in f.qualifiers):
-				f.qualifiers['product'] = 'hypothetical protein'
-			# print qualifiers (keys and values)
-			for (key, values) in f.qualifiers.items():
-				'''
-				Apply the iteritems() method of the dictionary f.qualifiers for (key, values) pairs
-				iteritems() is a generator that yields 2-tuples for a dictionary. It saves time and memory but is slower than the items() method.
-				'''
-				if key not in allowed_qualifiers:
-					continue  # start a new 'for' loop of f, skipping the following 'for' statement of v
-				for v in values:  # else, write all values under this key (qualifier's name)
-					print('\t\t\t%s\t%s' % (key, v), file = feature_fh)
-	fasta_fh.close()  # finish the generation of the FASTA file
-	feature_fh.close()  # finish the generation of the feature table
-	print(str(contig_num) + ' records have been converted.')
+        # write the feature table
+        print(
+            ">Feature %s" % (rec.name), file=feature_fh
+        )  # write the first line of this record in the feature table: the LOCUS name
+        for f in rec.features:
+            # print the coordinates
+            if f.location.strand == 1:
+                print(
+                    "%d\t%d\t%s" % (f.location.start + 1, f.location.end, f.type),
+                    file=feature_fh,
+                )
+            else:
+                print(
+                    "%d\t%d\t%s" % (f.location.end, f.location.start + 1, f.type),
+                    file=feature_fh,
+                )
+
+            if (f.type == "CDS") and ("product" not in f.qualifiers):
+                f.qualifiers["product"] = "hypothetical protein"
+            # print qualifiers (keys and values)
+            for key, values in f.qualifiers.items():
+                """
+                Apply the iteritems() method of the dictionary f.qualifiers for (key, values) pairs
+                iteritems() is a generator that yields 2-tuples for a dictionary. It saves time and memory but is slower than the items() method.
+                """
+                if key not in allowed_qualifiers:
+                    continue  # start a new 'for' loop of f, skipping the following 'for' statement of v
+                for (
+                    v
+                ) in values:  # else, write all values under this key (qualifier's name)
+                    print("\t\t\t%s\t%s" % (key, v), file=feature_fh)
+    fasta_fh.close()  # finish the generation of the FASTA file
+    feature_fh.close()  # finish the generation of the feature table
+    print(str(contig_num) + " records have been converted.")
+
 
 # call the main function
-if __name__ == '__main__':
-	gbk2tbl()
+if __name__ == "__main__":
+    gbk2tbl()
