@@ -168,6 +168,23 @@ def save_ncbi_feature_tables(df, output_dir="./"):
         print(f"Saved: {filename}")
 
 
+def get_lineage(record_id, taxonomy_data, taxdb):
+    """Retrieve the lineage of a given record from the taxonomy table."""
+    record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
+    if record_taxonomy.empty:
+        return []
+    taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
+    return retrieve_lineage(taxid_dict[record_id], taxdb)
+
+
+def predict_orfs(orf_finder, seq):
+    """Find genes, compute coding capacity, and determine orientation."""
+    genes = orf_finder.find_genes(bytes(seq))
+    coding_capacity = calculate_coding_capacity(genes, len(seq))
+    orientation = find_orientation(genes)
+    return genes, coding_capacity, orientation, orf_finder
+
+
 @click.command(help="Create feature tables for sequences.")
 @click.option(
     "-i",
@@ -222,80 +239,65 @@ def save_ncbi_feature_tables(df, output_dir="./"):
 def features(fasta_file, output_path, database, transl_table, taxonomy, threads):
     records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
 
+    # Train ORF finder
     orf_finder = pyrodigal_gv.ViralGeneFinder()
     training_info = orf_finder.train(
         *(bytes(seq.seq) for seq in records), translation_table=transl_table
     )
 
-    orf_finder = pyrodigal_gv.ViralGeneFinder(
+    # Initialize ORF finders
+    orf_finder1 = pyrodigal_gv.ViralGeneFinder(
         meta=False, viral_only=True, closed=True, training_info=training_info
     )
-
     orf_finder2 = pyrodigal_gv.ViralGeneFinder(
         meta=False, viral_only=True, closed=[True, False], training_info=training_info
     )
 
+    # Load taxonomy database
     taxdb = taxopy.TaxDb(
         nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
         names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
-    )  # TODO set database, provide dmp files
+    )  # TODO: Set database path
     taxonomy_data = read_taxonomy_table(taxonomy)
 
+    # Define output paths
     prot_path = f"{output_path}/proteins.faa"
     nucl_path = f"{output_path}/reoriented_nucleotide_sequences.fna"
-    results = []
-    no_orf_pred = []
-    overwrite = True
-    overwrite_n = True
+
+    results, no_orf_pred = [], []
+    overwrite, overwrite_n = True, True
+
     for record in records:
-        seq_length = len(record.seq)
+        lineage = get_lineage(record.id, taxonomy_data, taxdb) if taxonomy else []
 
-        lineage = []
-        if taxonomy:
-            record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record.id]
-            taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
-            # print(taxid_dict[record.id])
-            lineage = retrieve_lineage(taxid_dict[record.id], taxdb)
+        # Predict ORFs using orf_finder1 first
+        genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
+            orf_finder1, record.seq
+        )
 
-        seq_results = []
-
-        genes = orf_finder.find_genes(bytes(record.seq))
-        coding_capacity = calculate_coding_capacity(genes, seq_length)
-        orientation = find_orientation(genes)
+        # If coding capacity is too low, use orf_finder2 instead
+        if coding_capacity <= 0.5:
+            print(f"Repredicting ORFs for {record.id} due to low coding capacity.")
+            genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
+                orf_finder2, record.seq
+            )
 
         if coding_capacity > 0.5:
-            if orientation < 0 and "Negarnaviricota" not in lineage:
+            # Adjust orientation based on lineage
+            if (orientation < 0 and "Negarnaviricota" not in lineage) or (
+                orientation > 0 and "Negarnaviricota" in lineage
+            ):
                 record.seq = record.seq.reverse_complement()
-                genes = orf_finder.find_genes(bytes(record.seq))
-            elif orientation > 0 and "Negarnaviricota" in lineage:
-                record.seq = record.seq.reverse_complement()
-                genes = orf_finder.find_genes(bytes(record.seq))
-            seq_results = extract_gene_results(genes, record.id, seq_length)
+                genes, _, _, _ = predict_orfs(
+                    chosen_orf_finder, record.seq
+                )  # Use the last used ORF finder
+
+            results.extend(extract_gene_results(genes, record.id, len(record.seq)))
             overwrite = write_proteins(genes, record.id, prot_path, overwrite)
             overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
         else:
-            print(f"Repredicting ORFs for {record.id} because of low coding capacity.")
-            genes = orf_finder2.find_genes(bytes(record.seq))
-            coding_capacity = calculate_coding_capacity(genes, seq_length)
-            orientation = find_orientation(genes)
-
-            if coding_capacity > 0.5:
-                if orientation < 0 and "Negarnaviricota" not in lineage:
-                    record.seq = record.seq.reverse_complement()
-                    genes = orf_finder2.find_genes(bytes(record.seq))
-                elif orientation > 0 and "Negarnaviricota" in lineage:
-                    record.seq = record.seq.reverse_complement()
-                    genes = orf_finder2.find_genes(bytes(record.seq))
-                seq_results = extract_gene_results(genes, record.id, seq_length)
-                overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
-                overwrite = write_proteins(genes, record.id, prot_path, overwrite)
-            else:
-                no_orf_pred.append(record.id)
-                print(
-                    f"No ORF predictions with a total coding capacity over 50% for {record.id}."
-                )
-
-        results.extend(seq_results)
+            no_orf_pred.append(record.id)
+            print(f"No ORF predictions with >50% coding capacity for {record.id}.")
 
     with open(f"{output_path}/no_ORF_prediction.txt", "w") as f:
         for line in no_orf_pred:
