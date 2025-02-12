@@ -18,14 +18,22 @@ def calculate_coding_capacity(genes, seq_length):
 def find_orientation(genes):
     """
     Calculate the sum of the strand orientations for a list of genes.
+    If the sum is zero, return the orientation of the largest gene.
 
     Parameters:
-    genes (list): A list of gene objects, each having a 'strand' attribute.
+    genes (list): A list of gene objects, each having 'strand', 'begin', and 'end' attributes.
 
     Returns:
-    int: The sum of strand orientations across all genes, where each strand is typically represented as 1 (forward) or -1 (reverse).
+    int: The sum of strand orientations across all genes, or the orientation of the largest gene if the sum is zero.
     """
-    return sum(gene.strand for gene in genes)
+    orientation_sum = sum(gene.strand for gene in genes)
+
+    if orientation_sum == 0 and genes:
+        # Find the largest gene based on absolute length (|end - begin|)
+        largest_gene = max(genes, key=lambda gene: abs(gene.end - gene.begin))
+        return largest_gene.strand
+
+    return orientation_sum
 
 
 def extract_gene_results(genes, record_id, seq_length):
