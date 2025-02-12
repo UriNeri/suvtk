@@ -277,7 +277,7 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
 
         # If coding capacity is too low, use orf_finder2 instead
         if coding_capacity <= 0.5:
-            print(f"Repredicting ORFs for {record.id} due to low coding capacity.")
+            # print(f"Repredicting ORFs for {record.id} due to low coding capacity.")
             genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
                 orf_finder2, record.seq
             )
@@ -297,7 +297,9 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
             overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
         else:
             no_orf_pred.append(record.id)
-            print(f"No ORF predictions with >50% coding capacity for {record.id}.")
+            # print(
+            #    f"No ORF predictions with start site and >50% coding capacity for {record.id}."
+            # )
 
     with open(f"{output_path}/no_ORF_prediction.txt", "w") as f:
         for line in no_orf_pred:
@@ -343,7 +345,7 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
 
     Cmd = "mmseqs easy-search "
     Cmd += f"{output_path}/proteins.faa "  # input
-    Cmd += f"{database}/foldseek_db/bfvd"  # database
+    Cmd += f"{database} "  # database
     Cmd += f"{output_path}/gb_sub_proteins.m8 "  # output
     Cmd += "tmp "  # temp directory
     Cmd += "-s 7.5 "
@@ -351,10 +353,14 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
     Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits "
     Cmd += f"--threads {threads}"
 
+    utils.Exec(Cmd)
+
     aligner = "MMseqs2"
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
 
-    m8 = pd.read_csv("gb_sub_proteins.m8", sep="\t", header=None)
+    m8 = pd.read_csv(
+        f"{output_path}/gb_sub_proteins.m8", sep="\t", header=None, low_memory=False
+    )
     m8.rename(
         {
             0: "query",
@@ -374,6 +380,7 @@ def features(fasta_file, output_path, database, transl_table, taxonomy, threads)
         inplace=True,
     )
 
+    m8["evalue"] = pd.to_numeric(m8["evalue"], errors="coerce")
     m8 = m8[m8["evalue"] < 1e-3]
 
     m8["aligner"] = aligner
