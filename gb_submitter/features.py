@@ -9,6 +9,9 @@ from Bio.SeqIO import write
 
 from gb_submitter import utils
 
+# Define the valid genetic codes based on NCBI
+VALID_GENETIC_CODES = set(range(1, 7)) | set(range(9, 17)) | set(range(21, 32))
+
 
 def calculate_coding_capacity(genes, seq_length):
     """Calculate the total coding capacity for a list of genes."""
@@ -212,16 +215,17 @@ def write_feature_entries(file, group):
     type=click.Path(exists=True),
     help="BFVD diamond database path",
 )
-# TODO: limit genetic codes?
 @click.option(
     "-g",
     "--translation-table",
     "transl_table",
     required=False,
-    type=click.Choice(list(range(1, 32))),
-    default=1,
-    metavar="<1-31>",
-    help="Translation table to use",
+    type=click.Choice(
+        [str(code) for code in VALID_GENETIC_CODES], case_sensitive=False
+    ),
+    default="1",
+    metavar="",
+    help="Translation table to use. Only genetic codes from https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi are allowed (1-6, 9-16, 21-31).",
 )
 @click.option(
     "--taxonomy",
@@ -242,6 +246,7 @@ def write_feature_entries(file, group):
     required=False,
     default=4,
     type=int,
+    metavar="",
     help="Number of threads to use",
 )
 def features(
