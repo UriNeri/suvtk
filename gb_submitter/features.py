@@ -96,8 +96,21 @@ def read_taxonomy_table(taxonomy):
     return taxonomy_data
 
 
-def retrieve_lineage(taxid, taxdb):
-    lineage = taxopy.Taxon(taxid, taxdb).name_lineage
+def predict_orfs(orf_finder, seq):
+    """Find genes, compute coding capacity, and determine orientation."""
+    genes = orf_finder.find_genes(bytes(seq))
+    coding_capacity = calculate_coding_capacity(genes, len(seq))
+    orientation = find_orientation(genes)
+    return genes, coding_capacity, orientation, orf_finder
+
+
+def get_lineage(record_id, taxonomy_data, taxdb):
+    """Retrieve the lineage of a given record from the taxonomy table."""
+    record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
+    if record_taxonomy.empty:
+        return []
+    taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
+    lineage = taxopy.Taxon(taxid_dict[record_id], taxdb).name_lineage
     return lineage
 
 
@@ -166,23 +179,6 @@ def save_ncbi_feature_tables(df, output_dir="./"):
                     )
 
         print(f"Saved: {filename}")
-
-
-def get_lineage(record_id, taxonomy_data, taxdb):
-    """Retrieve the lineage of a given record from the taxonomy table."""
-    record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
-    if record_taxonomy.empty:
-        return []
-    taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
-    return retrieve_lineage(taxid_dict[record_id], taxdb)
-
-
-def predict_orfs(orf_finder, seq):
-    """Find genes, compute coding capacity, and determine orientation."""
-    genes = orf_finder.find_genes(bytes(seq))
-    coding_capacity = calculate_coding_capacity(genes, len(seq))
-    orientation = find_orientation(genes)
-    return genes, coding_capacity, orientation, orf_finder
 
 
 @click.command(help="Create feature tables for sequences.")
