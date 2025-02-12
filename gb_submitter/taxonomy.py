@@ -1,3 +1,6 @@
+import os
+import warnings
+
 import click
 import pandas as pd
 
@@ -48,6 +51,13 @@ from gb_submitter import utils
     help="Number of threads to use",
 )
 def taxonomy(fasta_file, database, output_path, seqid, threads):
+    if os.path.exists(output_path):
+        warnings.warn(
+            f"Warning: Output directory '{output_path}' already exists and may be overwritten."
+        )
+
+    os.makedirs(output_path, exist_ok=True)
+
     # Add RAM restrictions?
     # Add error handling
     Cmd = "mmseqs easy-taxonomy "

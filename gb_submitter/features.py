@@ -1,7 +1,7 @@
-# TODO: make output path if doesnt exist
 # TODO: add help info
 # TODO: do not reverse complement when negarnaviricota ==> see taxonomy script(?)
 import os
+import warnings
 
 import Bio.SeqIO
 import click
@@ -233,6 +233,13 @@ def save_ncbi_feature_tables(df, output_dir="./"):
     help="Number of threads to use",
 )
 def features(fasta_file, output_path, database, transl_table, taxonomy, threads):
+    if os.path.exists(output_path):
+        warnings.warn(
+            f"Warning: Output directory '{output_path}' already exists and may be overwritten."
+        )
+
+    os.makedirs(output_path, exist_ok=True)
+
     records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
 
     # Train ORF finder
