@@ -1,5 +1,6 @@
 import click
 import pandas as pd
+
 from gb_submitter import utils
 
 
@@ -104,7 +105,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     tax_names = []
     for index, row in merged.iterrows():
         if row["rank"] == "no rank":
-            print(f"No taxonomy for {row["query"]}")
+            print(f"No taxonomy for {row['query']}")
             last_known = "unclassified viruses"
             row["taxid"] = 12429
         elif row["rank"] == "species":  # Fix issue when species contains sp.
