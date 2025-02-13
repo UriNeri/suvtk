@@ -9,7 +9,7 @@ from gb_submitter import utils
 @click.command(help="Assign virus taxonomy to sequences.")
 @click.option(
     "-i",
-    "--input-file",
+    "--input",
     "fasta_file",
     required=True,
     type=click.Path(exists=True),
@@ -17,7 +17,7 @@ from gb_submitter import utils
 )
 @click.option(
     "-o",
-    "--output-path",
+    "--output",
     "output_path",
     required=True,
     type=click.Path(exists=False),
@@ -52,7 +52,7 @@ from gb_submitter import utils
 def taxonomy(fasta_file, database, output_path, seqid, threads):
     if os.path.exists(output_path):
         click.echo(
-            f"Warning: Output directory '{output_path}' already exists and may be overwritten."
+            f"Warning: Output directory '{output_path}' already exists and will be overwritten."
         )
 
     os.makedirs(output_path, exist_ok=True)
