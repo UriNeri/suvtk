@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import click
 import pandas as pd
@@ -60,13 +61,15 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     # Add RAM restrictions?
     # Add error handling
     Cmd = "mmseqs easy-taxonomy "
-    Cmd += f"{fasta_file} "
-    Cmd += f"{database} "
-    Cmd += f"{output_path}/taxresults "
-    Cmd += "tmp "
+    Cmd += f"{fasta_file} "  # input
+    Cmd += f"{database} "  # database
+    Cmd += f"{output_path}/taxresults "  # output
+    Cmd += "tmp "  # tmp
     Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
     Cmd += f"--threads {threads}"
     utils.Exec(Cmd)
+
+    shutil.rmtree("tmp")
 
     taxonomy = pd.read_csv(f"{output_path}/taxresults_lca.tsv", sep="\t", header=None)
     taxonomy.rename(

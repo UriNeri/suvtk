@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import Bio.SeqIO
 import click
@@ -381,8 +382,9 @@ def features(
     Cmd += "--format-mode 0 "
     Cmd += "--format-output query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits "
     Cmd += f"--threads {threads}"
-
     utils.Exec(Cmd)
+
+    shutil.rmtree("tmp")
 
     aligner = "MMseqs2"
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
