@@ -359,7 +359,7 @@ def features(
     # Cmd = "diamond blastp "
     # Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
     # Cmd += f"--query {output_path}/proteins.faa "
-    # Cmd += f"--out {output_path}/gb_sub_proteins.m8 "
+    # Cmd += f"--out {output_path}/alignment.m8 "
     # Cmd += f"--threads {threads} "
     # Cmd += "--sensitive "
     # Cmd += "--index-chunks 1 "
@@ -376,7 +376,7 @@ def features(
     Cmd = "mmseqs easy-search "
     Cmd += f"{output_path}/proteins.faa "  # input
     Cmd += f"{database} "  # database
-    Cmd += f"{output_path}/gb_sub_proteins.m8 "  # output
+    Cmd += f"{output_path}/alignment.m8 "  # output
     Cmd += "tmp "  # temp directory
     Cmd += "-s 7.5 "
     Cmd += "--format-mode 0 "
@@ -390,7 +390,7 @@ def features(
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
 
     m8 = pd.read_csv(
-        f"{output_path}/gb_sub_proteins.m8",
+        f"{output_path}/alignment.m8",
         sep="\t",
         header=None,
     )
