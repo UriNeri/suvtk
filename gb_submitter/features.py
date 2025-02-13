@@ -13,6 +13,14 @@ from gb_submitter import utils
 VALID_GENETIC_CODES = set(range(1, 7)) | set(range(9, 17)) | set(range(21, 32))
 
 
+def validate_translation_table(ctx, param, value):
+    if value not in VALID_GENETIC_CODES:
+        raise click.BadParameter(
+            f"Invalid translation table. Must be one of {sorted(VALID_GENETIC_CODES)}."
+        )
+    return value
+
+
 def calculate_coding_capacity(genes, seq_length):
     """Calculate the total coding capacity for a list of genes."""
     return sum((gene.end - gene.begin) / seq_length for gene in genes)
@@ -193,7 +201,7 @@ def write_feature_entries(file, group):
 @click.command(help="Create feature tables for sequences.")
 @click.option(
     "-i",
-    "--input-file",
+    "--input",
     "fasta_file",
     required=True,
     type=click.Path(exists=True),
@@ -201,7 +209,7 @@ def write_feature_entries(file, group):
 )
 @click.option(
     "-o",
-    "--output-path",
+    "--output",
     "output_path",
     required=True,
     type=click.Path(exists=False),
@@ -220,10 +228,9 @@ def write_feature_entries(file, group):
     "--translation-table",
     "transl_table",
     required=False,
-    type=click.Choice(
-        [str(code) for code in VALID_GENETIC_CODES], case_sensitive=False
-    ),
-    default="1",
+    type=int,
+    callback=validate_translation_table,
+    default=1,
     metavar="",
     help="Translation table to use. Only genetic codes from https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi are allowed (1-6, 9-16, 21-31).",
 )
@@ -254,7 +261,7 @@ def features(
 ):
     if os.path.exists(output_path):
         click.echo(
-            f"Warning: Output directory '{output_path}' already exists and may be overwritten."
+            f"Warning: Output directory '{output_path}' already exists and will be overwritten."
         )
 
     os.makedirs(output_path, exist_ok=True)
