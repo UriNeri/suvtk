@@ -3,8 +3,26 @@ import shutil
 
 import click
 import pandas as pd
+import importlib.resources
+import taxopy
 
 from gb_submitter import utils
+
+
+def load_segment_db():
+    """
+    Load the segmented viruses database.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Data frame with the segmented viruses database.
+    """
+    with importlib.resources.files("gb_submitter.data").joinpath(
+        "segmented_viruses.tsv"
+    ).open("r") as file:
+        db = pd.read_csv(file, sep="\t", header=0)
+        return db
 
 
 @click.command(help="Assign virus taxonomy to sequences.")
@@ -58,8 +76,8 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     os.makedirs(output_path, exist_ok=True)
 
-    # Add RAM restrictions?
-    # Add error handling
+    # TODO Add RAM restrictions?
+    # TODO Add error handling
     Cmd = "mmseqs easy-taxonomy "
     Cmd += f"{fasta_file} "  # input
     Cmd += f"{database} "  # database
@@ -123,16 +141,14 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         elif row["rank"] == "species":  # Fix issue when species contains sp.
             last_known = row["lineage"].split(";")[-2].replace("g_", "")
             last_known += " sp."
+        elif (
+            row["rank"] == "genus" and row["pident"] < seqid  # TODO check best cutoff
+        ):  # if genus rank and sequence identity is lower than 70% (seqid) get family assignment
+            last_known = row["lineage"].split(";")[-2].replace("f_", "")
+            last_known += " sp."
         else:
-            if (
-                row["rank"] == "genus"
-                and row["pident"] < seqid  # TODO check best cutoff
-            ):  # if genus rank and sequence identity is lower than 70% (seqid) get family assignment
-                last_known = row["lineage"].split(";")[-2].replace("f_", "")
-                last_known += " sp."
-            else:
-                last_known = row["name"].strip()
-                last_known += " sp."
+            last_known = row["name"].strip()
+            last_known += " sp."
         tax_names.append(
             [
                 row["query"],
@@ -143,6 +159,30 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy", "taxid"])
     tax_df.to_csv(f"{output_path}/taxonomy.tsv", sep="\t", index=False)
+
+    # Load database file with segmented viruses
+    segment_db = load_segment_db()
+
+    # Load taxonomy database
+    taxdb = taxopy.TaxDb(
+        nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
+        names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
+    )  # TODO: Set database path
+
+    for index, row in tax_df.iterrows():
+        # lineage = utils.get_lineage(row["contig"], tax_df, taxdb)
+        lineage = taxopy.Taxon(row["taxid"], taxdb).name_lineage
+        for taxa in lineage:
+            if taxa in segment_db["taxon"]:
+                segment_record = segment_db[segment_db["taxon"] == taxa]
+                click.echo(
+                    f"""
+                    {row["contig"]} is part of the {segment_record["taxon"]}, {segment_record["segmented_fraction"]:.2f} of this {segment_record["rank"]} are segmented viruses.\n
+                    Most viruses of the {segment_record["taxon"]} have {segment_record["majority_segment"]} segments, but it can vary between {segment_record["min_segment"]} and {segment_record["max_segment"]} depending on the species.\n
+                    You might want to look into your data to see if you can identify the missing segments.
+                    """
+                )
+            break
 
 
 if __name__ == "__main__":
