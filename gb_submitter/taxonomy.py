@@ -1,9 +1,9 @@
+import importlib.resources
 import os
 import shutil
 
 import click
 import pandas as pd
-import importlib.resources
 import taxopy
 
 from gb_submitter import utils
@@ -169,20 +169,49 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
     )  # TODO: Set database path
 
+    segmented = False
+    results = []
+
     for index, row in tax_df.iterrows():
-        # lineage = utils.get_lineage(row["contig"], tax_df, taxdb)
         lineage = taxopy.Taxon(row["taxid"], taxdb).name_lineage
         for taxa in lineage:
-            if taxa in segment_db["taxon"]:
-                segment_record = segment_db[segment_db["taxon"] == taxa]
-                click.echo(
-                    f"""
-                    {row["contig"]} is part of the {segment_record["taxon"]}, {segment_record["segmented_fraction"]:.2f} of this {segment_record["rank"]} are segmented viruses.\n
-                    Most viruses of the {segment_record["taxon"]} have {segment_record["majority_segment"]} segments, but it can vary between {segment_record["min_segment"]} and {segment_record["max_segment"]} depending on the species.\n
-                    You might want to look into your data to see if you can identify the missing segments.
-                    """
+            if taxa in segment_db["taxon"].values:
+                segment_record = (
+                    segment_db.loc[segment_db["taxon"] == taxa].iloc[0].to_dict()
                 )
-            break
+
+                record = {"contig": row["contig"], **segment_record}
+                results.append(record)  # Append the updated dictionary
+
+                if segment_record["segmented_fraction"] >= 25:
+                    segmented = True
+                    click.echo(
+                        f"\n{row['contig']} is part of the {segment_record['taxon']} {segment_record['rank']}, {segment_record['segmented_fraction']:.2f}% of these are segmented viruses."
+                    )
+                    if segment_record["min_segment"] != segment_record["max_segment"]:
+                        click.echo(
+                            f"Most segmented viruses of the {segment_record['rank']} {segment_record['taxon']} have {segment_record['majority_segment']} segments, but it can vary between {segment_record['min_segment']} and {segment_record['max_segment']} depending on the species."
+                        )
+                    else:
+                        click.echo(
+                            f"The segmented viruses of the {segment_record['rank']} {segment_record['taxon']} have {segment_record['majority_segment']} segments."
+                        )
+                break
+
+    if segmented:
+        click.echo(
+            "\nYou might want to look into your data to see if you can identify the missing segments."
+        )
+
+    # Convert results list to DataFrame
+    if results:
+        segmented_df = pd.DataFrame(results)
+        segmented_df = segmented_df.sort_values(
+            by="segmented_fraction", ascending=False
+        )
+        segmented_df.to_csv(
+            f"{output_path}/segmented_viruses_info.tsv", sep="\t", index=False
+        )
 
 
 if __name__ == "__main__":
