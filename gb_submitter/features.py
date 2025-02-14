@@ -15,6 +15,19 @@ VALID_GENETIC_CODES = set(range(1, 7)) | set(range(9, 17)) | set(range(21, 32))
 
 
 def validate_translation_table(ctx, param, value):
+    """Validate that the given translation table is one of the valid genetic codes.
+
+    Args:
+        ctx: The Click context object. Unused.
+        param: The parameter object. Unused.
+        value: The given translation table.
+
+    Returns:
+        value: The given translation table if it is valid.
+
+    Raises:
+        click.BadParameter: If the given translation table is not valid.
+    """
     if value not in VALID_GENETIC_CODES:
         raise click.BadParameter(
             f"Invalid translation table. Must be one of {sorted(VALID_GENETIC_CODES)}."
@@ -104,13 +117,6 @@ def select_top_structure(df):
     # Select those rows
     result = df.loc[highest_bits_idx]
     return result
-
-
-def read_taxonomy_table(taxonomy):
-    taxonomy_data = None
-    if taxonomy:
-        taxonomy_data = pd.read_csv(taxonomy, sep="\t")
-    return taxonomy_data
 
 
 def predict_orfs(orf_finder, seq):
@@ -284,11 +290,12 @@ def features(
     )
 
     # Load taxonomy database
-    taxdb = taxopy.TaxDb(
-        nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
-        names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
-    )  # TODO: Set database path
-    taxonomy_data = read_taxonomy_table(taxonomy)
+    if taxonomy:
+        taxdb = taxopy.TaxDb(
+            nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
+            names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
+        )  # TODO: Set database path
+        taxonomy_data = pd.read_csv(taxonomy, sep="\t")
 
     # Define output paths
     prot_path = f"{output_path}/proteins.faa"
