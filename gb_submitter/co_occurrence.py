@@ -6,15 +6,34 @@ import numpy as np
 import pandas as pd
 
 
-def clean_abundance(df):
-    df_clean = df.drop(df.columns[df.columns.str.contains("NC")], axis=1)
-    df_clean["sample_count"] = df_clean.apply(lambda row: row[row != 0].count(), axis=1)
-    df_clean["proportion_samples"] = df_clean["sample_count"] / (df_clean.shape[1] - 1)
+def calculate_proportion(df):
+    """
+    Calculate the proportion of samples for each contig in a dataframe.
 
-    return df_clean
+    Parameters:
+    df (DataFrame): A pandas DataFrame where rows represent contigs and columns represent samples.
+
+    Returns:
+    DataFrame: The original DataFrame with two additional columns: 'sample_count', the total number of samples a contig is present in, and 'proportion_samples', the proportion of samples a contig is present in.
+    """
+    # df_clean = df.drop(df.columns[df.columns.str.contains("NC")], axis=1)
+    df["sample_count"] = df.apply(lambda row: row[row != 0].count(), axis=1)
+    df["proportion_samples"] = df["sample_count"] / (df.shape[1] - 1)
+
+    return df
 
 
 def create_correlation_matrix(df_transposed):
+    """
+    Calculate a Spearman correlation matrix for the transposed dataframe and mask the upper triangle.
+
+    Parameters:
+    df_transposed (DataFrame): A transposed pandas DataFrame where rows represent samples and columns represent variables.
+
+    Returns:
+    DataFrame: A masked correlation matrix with the upper triangle set to NaN, and the axes renamed to 'Contig1' and 'Contig2'.
+    """
+
     correlation_matrix = df_transposed.corr(method="spearman")
 
     mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool)
@@ -28,6 +47,18 @@ def create_correlation_matrix(df_transposed):
 
 
 def segment_correlation_matrix(df, segment_list):
+    """
+    Calculate the correlation of each segment in the segment list with all rows in the DataFrame.
+
+    Parameters:
+    df (DataFrame): A pandas DataFrame with rows representing samples and columns representing variables.
+    segment_list (list): A list of segment indices to calculate correlations with.
+
+    Returns:
+    DataFrame: A DataFrame where each column represents a segment from the segment_list and each value
+               is the Spearman correlation with the corresponding row in the original DataFrame.
+    """
+
     correlation_results_df = pd.DataFrame()
 
     # Loop through each segment in segment_list
@@ -42,6 +73,16 @@ def segment_correlation_matrix(df, segment_list):
 
 
 def create_segment_list(segment_file):
+    """
+    Reads a file containing segment identifiers and returns them as a list.
+
+    Parameters:
+    segment_file (str): The path to a file containing segment identifiers, one per line.
+
+    Returns:
+    list: A list of segment identifiers with whitespace stripped.
+    """
+
     file_path = Path(segment_file)
 
     # Read the file into a list
@@ -114,7 +155,7 @@ def create_segment_list(segment_file):
 def co_occurrence(input, output, segments, lengths, prevalence, correlation, strict):
     print("Read in abundance table.")
     abundance_df = pd.read_csv(input, sep="\t", index_col=0)
-    df = clean_abundance(abundance_df)
+    df = calculate_proportion(abundance_df)
 
     # Define the threshold
     prevalence_threshold = prevalence
