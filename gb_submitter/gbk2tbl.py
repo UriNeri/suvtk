@@ -48,7 +48,13 @@ from Bio import SeqIO
 @click.command(
     help="Convert a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn)."
 )
-@click.option("-i", "--input", type=str, required=True, help="Input genbank file")
+@click.option(
+    "-i",
+    "--input",
+    type=click.Path(exists=True),
+    required=True,
+    help="Input genbank file",
+)
 @click.option(
     "-m",
     "--mincontigsize",
