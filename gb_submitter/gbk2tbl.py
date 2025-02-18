@@ -45,9 +45,7 @@ import click
 from Bio import SeqIO
 
 
-@click.command(
-    help="Convert a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn)."
-)
+@click.command(short_help="Convert a GenBank flatfile into a feature table (.tbl).")
 @click.option(
     "-i",
     "--input",
@@ -72,6 +70,9 @@ from Bio import SeqIO
     help="The prefix of output filenames",
 )
 def gbk2tbl(input, mincontigsize, prefix):
+    """
+    This script converts a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn).
+    """
     allowed_qualifiers = [
         "locus_tag",
         "gene",

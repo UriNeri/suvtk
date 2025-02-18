@@ -19,7 +19,7 @@ class FullHelpGroup(click.Group):
         ]
 
         if commands:
-            rows = [(name, cmd.help or "") for name, cmd in commands]
+            rows = [(name, cmd.short_help or "") for name, cmd in commands]
 
             with formatter.section(_("Commands")):
                 formatter.write_dl(rows)

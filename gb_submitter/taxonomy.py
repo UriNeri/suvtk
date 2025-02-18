@@ -25,7 +25,7 @@ def load_segment_db():
         return db
 
 
-@click.command(help="Assign virus taxonomy to sequences.")
+@click.command(short_help="Assign virus taxonomy to sequences.")
 @click.option(
     "-i",
     "--input",
@@ -69,6 +69,9 @@ def load_segment_db():
     help="Number of threads to use",
 )
 def taxonomy(fasta_file, database, output_path, seqid, threads):
+    """
+    This command uses MMseqs2 to assign taxonomy to sequences using protein sequences from ICTV taxa in the nr database.
+    """
     if os.path.exists(output_path):
         click.echo(
             f"Warning: Output directory '{output_path}' already exists and will be overwritten."

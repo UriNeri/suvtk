@@ -205,7 +205,7 @@ def write_feature_entries(file, group):
             )
 
 
-@click.command(help="Create feature tables for sequences.")
+@click.command(short_help="Create feature tables for sequences.")
 @click.option(
     "-i",
     "--input",
@@ -266,6 +266,14 @@ def write_feature_entries(file, group):
 def features(
     fasta_file, output_path, database, transl_table, taxonomy, separate_files, threads
 ):
+    """
+    Create feature tables for sequences from an input fasta file.
+
+    This command processes the input sequences to predict open reading frames (ORFs),
+    aligns the predicted protein sequences against a specified database with proteins and their function, and generates
+    feature tables for submission to GenBank.
+    """
+
     if os.path.exists(output_path):
         click.echo(
             f"Warning: Output directory '{output_path}' already exists and will be overwritten."

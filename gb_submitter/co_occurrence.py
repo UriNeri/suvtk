@@ -93,7 +93,7 @@ def create_segment_list(segment_file):
     return segment_list
 
 
-@click.command(help="Find co-occurring sequences in abundance table.")
+@click.command(short_help="Find co-occurring sequences in abundance table.")
 @click.option(
     "-i",
     "--input",
@@ -153,6 +153,14 @@ def create_segment_list(segment_file):
     help="The correlation threshold should be met for all provided segments.",
 )
 def co_occurrence(input, output, segments, lengths, prevalence, correlation, strict):
+    """
+    Identify co-occurring sequences in an abundance table based on specified thresholds.
+
+    This function reads an abundance table, filters contigs based on prevalence, and calculates
+    correlation matrices to identify co-occurring sequences. It supports optional segment-specific
+    analysis and contig length correction.
+    """
+
     print("Read in abundance table.")
     abundance_df = pd.read_csv(input, sep="\t", index_col=0)
     df = calculate_proportion(abundance_df)
