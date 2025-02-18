@@ -242,6 +242,12 @@ def write_feature_entries(file, group):
     help="Translation table to use. Only genetic codes from https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi are allowed (1-6, 9-16, 21-31).",
 )
 @click.option(
+    "--coding-complete",
+    required=False,
+    is_flag=True,
+    help="Do not predict incomplete genes (no stop codon) and only keep genomes that are 'coding complete' (>50% coding capacity).",
+)
+@click.option(
     "--taxonomy",
     required=False,
     type=click.Path(exists=True),
@@ -264,7 +270,14 @@ def write_feature_entries(file, group):
     help="Number of threads to use",
 )
 def features(
-    fasta_file, output_path, database, transl_table, taxonomy, separate_files, threads
+    fasta_file,
+    output_path,
+    database,
+    transl_table,
+    coding_complete,
+    taxonomy,
+    separate_files,
+    threads,
 ):
     """
     Create feature tables for sequences from an input fasta file.
@@ -321,13 +334,13 @@ def features(
         )
 
         # If coding capacity is too low, use orf_finder2 instead
-        if coding_capacity <= 0.5:
+        if coding_capacity < 0.5 and not coding_complete:
             # click.echo(f"Repredicting ORFs for {record.id} due to low coding capacity.")
             genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
                 orf_finder2, record.seq
             )
 
-        if coding_capacity > 0.5:
+        if coding_capacity >= 0.5:
             # Adjust orientation based on lineage
             if (orientation < 0 and "Negarnaviricota" not in lineage) or (
                 orientation > 0 and "Negarnaviricota" in lineage
