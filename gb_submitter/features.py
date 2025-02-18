@@ -138,7 +138,7 @@ def get_lineage(record_id, taxonomy_data, taxdb):
 
 
 # Functions to generate and save NCBI feature tables
-def save_ncbi_feature_tables(df, output_dir="./", single_file=True):
+def save_ncbi_feature_tables(df, output_dir=".", single_file=True):
     """
     Generate and save NCBI feature tables for sequences in a DataFrame.
 
@@ -149,7 +149,7 @@ def save_ncbi_feature_tables(df, output_dir="./", single_file=True):
     df (pd.DataFrame): DataFrame containing sequence data with columns
                        ['seqid', 'accession', 'start', 'end', 'strand', 'type',
                         'Protein names', 'source', 'start_codon', 'partial_begin', 'partial_end'].
-    output_dir (str): Directory path to save the feature tables. Defaults to "./".
+    output_dir (str): Directory path to save the feature tables. Defaults to ".".
     single_file (bool): If True, saves all features to one file; otherwise, saves separate files.
     """
 
@@ -319,8 +319,8 @@ def features(
         taxonomy_data = pd.read_csv(taxonomy, sep="\t")
 
     # Define output paths
-    prot_path = f"{output_path}/proteins.faa"
-    nucl_path = f"{output_path}/reoriented_nucleotide_sequences.fna"
+    prot_path = os.path.join(output_path, "proteins.faa")
+    nucl_path = os.path.join(output_path, "reoriented_nucleotide_sequences.fna")
 
     results, no_orf_pred = [], []
     overwrite, overwrite_n = True, True
@@ -359,7 +359,7 @@ def features(
             #    f"No ORF predictions with start site and >50% coding capacity for {record.id}."
             # )
 
-    with open(f"{output_path}/no_ORF_prediction.txt", "w") as f:
+    with open(os.path.join(output_path, "no_ORF_prediction.txt"), "w") as f:
         for line in no_orf_pred:
             f.write(f"{line}\n")
 
@@ -377,9 +377,12 @@ def features(
     ]
     df = pd.DataFrame(results, columns=columns)
 
+    feat_pred = f"pyrodigal-gv"
+    feat_pred_version = f"{pyrodigal_gv.__version__}"
+
     df["seqid"] = df["seqid"].str.strip()
     df["type"] = "CDS"
-    df["source"] = f"pyrodigal-gv:{pyrodigal_gv.__version__}"
+    df["source"] = f"{feat_pred}:{feat_pred_version}"
     # df["source"] = f"pyrodigal-gv"
     # df["annotation_source"]=f"BFVD (https://doi.org/10.1093/nar/gkae1119)"
     df["annotation_source"] = "UniProtKB"
@@ -401,10 +404,12 @@ def features(
     # aligner_version = utils.Exec("diamond version", capture=True)
     # aligner_version = aligner_version.strip().split()[2]
 
+    m8_path = os.path.join(output_path, "alignment.m8")
+
     Cmd = "mmseqs easy-search "
-    Cmd += f"{output_path}/proteins.faa "  # input
+    Cmd += f"{prot_path} "  # input
     Cmd += f"{database} "  # database
-    Cmd += f"{output_path}/alignment.m8 "  # output
+    Cmd += f"{m8_path} "  # output
     Cmd += "tmp "  # temp directory
     Cmd += "-s 7.5 "
     Cmd += "--format-mode 0 "
@@ -418,7 +423,7 @@ def features(
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
 
     m8 = pd.read_csv(
-        f"{output_path}/alignment.m8",
+        m8_path,
         sep="\t",
         header=None,
     )
@@ -484,7 +489,7 @@ def features(
 
     # prot_df["Protein names"]
 
-    prot_df.to_csv(f"{output_path}/tophit_info.tsv", sep="\t", index=False)
+    prot_df.to_csv(os.path.join(output_path, "tophit_info.tsv"), sep="\t", index=False)
 
     diamond = prot_df
     final_df = pd.merge(df, diamond, left_on="orf", right_on="query", how="left")
@@ -494,6 +499,16 @@ def features(
     save_ncbi_feature_tables(
         final_df, output_dir=f"{output_path}", single_file=single_file
     )
+
+    with open(os.path.join(output_path, "miuvig_features.tsv")) as file:
+        file.write(f"MIUVIG_parameter\tvalue\n")
+        file.write(
+            f"feat_pred\t{feat_pred};{feat_pred_version};-g {transl_table}, default otherwise\n"
+        )
+        file.write(f"ref_db\tBFVD;2023_02;https://bfvd.steineggerlab.workers.dev\n")
+        file.write(
+            f"sim_search_meth\t{aligner};{aligner_version};-s 7.5, default otherwise\n"
+        )
 
 
 if __name__ == "__main__":
