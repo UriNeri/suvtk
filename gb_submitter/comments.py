@@ -240,7 +240,7 @@ def comments(taxonomy, features, miuvig, output):
         os.makedirs(output_dir, exist_ok=True)
 
     # 9. Write the combined DataFrame to a TSV file.
-    taxonomy_df.to_csv(output, sep="\t", index=False)
+    taxonomy_df.to_csv(os.path.join(output, ".cmt"), sep="\t", index=False)
     click.echo(f"Combined file written to {output}")
 
 
