@@ -15,7 +15,7 @@ genome_types <- msl |>
   mutate(Genome = case_when(
     Genome == "ssDNA(+/-)" ~ "ssDNA",
     Genome == "ssDNA(+)" ~ "ssDNA",
-    Genome == "ssRNA(+/-)" ~ "ssRNA",
+    Genome == "ssRNA(+/-)" ~ "ssRNA(-)",
     Genome == "ssRNA(-); ssRNA(+/-)" ~ "ssRNA(-)",
     Genome == "dsDNA-RT" ~ "dsDNA",
     Genome == "ssRNA-RT" ~ "ssRNA",

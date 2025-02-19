@@ -5,15 +5,14 @@ Ribozyviria	ssRNA(-)
 Helvetiavirae	dsDNA
 Loebvirae	ssDNA
 Sangervirae	ssDNA
-Ambiviricota	ssRNA
+Ambiviricota	ssRNA(-)
 Cressdnaviricota	ssDNA
 Duplornaviricota	dsRNA
 Kitrinoviricota	ssRNA(+)
 Lenarviricota	ssRNA(+)
+Negarnaviricota	ssRNA(-)
 Nucleocytoviricota	dsDNA
-Haploviricotina	ssRNA(-)
 Ainoaviricetes	ssDNA
-Insthoviricetes	ssRNA(-)
 Maveriviricetes	dsDNA
 Mouviricetes	ssDNA
 Naldaviricetes	dsDNA
@@ -37,29 +36,19 @@ Birnaviridae	dsRNA
 Brachygtaviriformidae	dsDNA
 Caulimoviridae	dsDNA
 Clavaviridae	dsDNA
-Cruliviridae	ssRNA(-)
 Curvulaviridae	dsRNA
-Discoviridae	ssRNA(-)
-Fimoviridae	ssRNA(-)
 Fusariviridae	ssRNA(+)
 Fuselloviridae	dsDNA
 Globuloviridae	dsDNA
 Guttaviridae	dsDNA
 Hadakaviridae	ssRNA(+)
 Halspiviridae	dsDNA
-Hantaviridae	ssRNA(-)
 Hypoviridae	ssRNA(+)
 Itzamnaviridae	dsDNA
-Konkoviridae	ssRNA(-)
-Leishbuviridae	ssRNA(-)
 Metaviridae	ssRNA
-Mypoviridae	ssRNA(-)
-Nairoviridae	ssRNA(-)
 Ovaliviridae	dsDNA
 Partitiviridae	dsRNA
-Peribunyaviridae	ssRNA(-)
 Permutotetraviridae	ssRNA(+)
-Phasmaviridae	ssRNA(-)
 Picobirnaviridae	dsRNA
 Plasmaviridae	dsDNA
 Polydnaviriformidae	dsDNA
@@ -73,59 +62,17 @@ Sarthroviridae	ssRNA(+)
 Spiraviridae	ssDNA
 Thaspiviridae	dsDNA
 Tolecusatellitidae	ssDNA
-Tosoviridae	ssRNA
-Tospoviridae	ssRNA
-Tulasviridae	ssRNA
-Wupedeviridae	ssRNA(-)
 Yaraviridae	dsDNA
 Albetovirus	ssRNA(+)
-Antennavirus	ssRNA(-)
 Aumaivirus	ssRNA(+)
-Bandavirus	ssRNA(-)
-Beidivirus	ssRNA(-)
 Betapleolipovirus	dsDNA
-Bocivirus	ssRNA(-)
-Citricivirus	ssRNA(-)
-Coguvirus	ssRNA(-)
 Dinodnavirus	dsDNA
-Entovirus	ssRNA(-)
 Gammapleolipovirus	dsDNA
-Goukovirus	ssRNA(-)
-Hartmanivirus	ssRNA(-)
-Horwuvirus	ssRNA(-)
-Hudivirus	ssRNA(-)
-Hudovirus	ssRNA(-)
-Innmovirus	ssRNA(-)
-Ixovirus	ssRNA(-)
-Laulavirus	ssRNA(-)
-Lentinuvirus	ssRNA(-)
-Mammarenavirus	ssRNA
-Mechlorovirus	ssRNA(-)
-Mobuvirus	ssRNA(-)
 Papanivirus	ssRNA(+)
-Phasivirus	ssRNA(-)
-Phlebovirus	ssRNA(-)
-Pidchovirus	ssRNA(-)
-Reptarenavirus	ssRNA
 Rhizidiovirus	dsDNA
-Rubodvirus	ssRNA(-)
-Tanzavirus	ssRNA(-)
-Uukuvirus	ssRNA(-)
 Virtovirus	ssRNA(+)
-Wenrivirus	ssRNA(-)
 Alphapleolipovirus finnoniense	ssDNA
 Alphapleolipovirus huluense	ssDNA
 Alphapleolipovirus italiense	dsDNA
 Alphapleolipovirus samutsakhonense	ssDNA
 Alphapleolipovirus thailandense	ssDNA
-Tenuivirus echinochloae	ssRNA(-)
-Tenuivirus eurotritici	ssRNA
-Tenuivirus festucae	ssRNA(-)
-Tenuivirus kwazuluense	ssRNA(-)
-Tenuivirus oryzabrevis	ssRNA
-Tenuivirus oryzaclavatae	ssRNA(-)
-Tenuivirus oryzalbae	ssRNA(-)
-Tenuivirus persotritici	ssRNA
-Tenuivirus pontaense	ssRNA(-)
-Tenuivirus urochloae	ssRNA
-Tenuivirus zeae	ssRNA(-)
