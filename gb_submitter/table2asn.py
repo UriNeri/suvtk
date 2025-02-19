@@ -1,7 +1,9 @@
 # TODO: add date correction option
 # TODO: check/display stats file for errors (https://www.ncbi.nlm.nih.gov/genbank/validation/#BioSourceMissing)
-import click
 import os
+
+import click
+
 from gb_submitter import utils
 
 
@@ -68,9 +70,6 @@ def table2asn(input, output, src_file, features, template, comments):
 
     utils.Exec(Cmd)
 
-    print(
-        "List of warning / information reported by table2asn -- these are just for your information:"
-    )
     tag = 0
     error_file = f"{output}.val"
     with open(error_file, "r") as f:
