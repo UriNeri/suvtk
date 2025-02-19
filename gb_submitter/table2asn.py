@@ -46,7 +46,15 @@ from gb_submitter import utils
     type=click.Path(exists=True),
     help="Template file with author information (.sbt). See https://submit.ncbi.nlm.nih.gov/genbank/template/submission/",
 )
-def table2asn(input, output, src_file, features, template):
+@click.option(
+    "-c",
+    "--comments",
+    "comments",
+    required=True,
+    type=click.Path(exists=True),
+    help="Structured comment file (.cmt) with MIUVIG information.",
+)
+def table2asn(input, output, src_file, features, template, comments):
     """This command generates a .sqn file that you can send to gb-sub@ncbi.nlm.nih.gov"""
     Cmd = "table2asn "
     Cmd += f"-i {input} "
@@ -54,7 +62,25 @@ def table2asn(input, output, src_file, features, template):
     Cmd += f"-t {template} "
     Cmd += f"-f {features} "
     Cmd += f"-src-file {src_file} "
+    Cmd += f"-Y {comments}"
     Cmd += "-V v "  # Check for errors
     Cmd += "-a s"  # allow multifasta file
 
     utils.Exec(Cmd)
+
+    print(
+        "List of warning / information reported by table2asn -- these are just for your information:"
+    )
+    tag = 0
+    error_file = f"{output}.val"
+    with open(error_file, "r") as f:
+        for line in f.readlines():
+            if line.startswith("Warning") or line.startswith("Info"):
+                # click.echo(f"{line}")
+                continue
+            else:
+                click.echo(f"UNEXPECTED ERROR -- {line}")
+                tag = 1
+
+    if tag == 0:
+        print("No major errors reported for Genbank submission")
