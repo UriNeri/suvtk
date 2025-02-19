@@ -225,8 +225,10 @@ def comments(taxonomy, features, miuvig, output):
     taxonomy_df = taxonomy_df[desired_existing + remaining_cols]
     taxonomy_df.rename(columns={"contig": "SeqID"}, inplace=True)
 
-    # 8. Ensure the output directory exists.
-    os.makedirs(os.path.dirname(output), exist_ok=True)
+    # 8. Ensure the output directory exists, but only if a directory is specified
+    output_dir = os.path.dirname(output)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
 
     # 9. Write the combined DataFrame to a TSV file.
     taxonomy_df.to_csv(output, sep="\t", index=False)
