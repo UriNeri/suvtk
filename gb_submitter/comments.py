@@ -180,10 +180,22 @@ def comments(taxonomy, features, miuvig, output):
     for key, allowed in allowed_values.items():
         if key in merged_params:
             value = merged_params[key]
-            if value not in allowed:
-                raise click.ClickException(
-                    f"Invalid value for {key}: {value}. Allowed values: {', '.join(allowed)}."
-                )
+            if key == "virus_enrich_appr":
+                vea = list(map(str.strip, value.split("+")))
+                invalid_values = [
+                    v for v in vea if v not in allowed
+                ]  # Collect invalid values
+                if invalid_values:  # If there's any invalid value, raise an error
+                    raise click.ClickException(
+                        f"Invalid value(s) for {key}: {', '.join(invalid_values)}. "
+                        f"Allowed values: {', '.join(allowed)}."
+                        f"Allowed values should be separated by a '+'."
+                    )
+            else:
+                if value not in allowed:
+                    raise click.ClickException(
+                        f"Invalid value for {key}: {value}. Allowed values: {', '.join(allowed)}."
+                    )
 
     # 6. Add merged parameters as new constant columns to the taxonomy DataFrame.
     for param, val in merged_params.items():
