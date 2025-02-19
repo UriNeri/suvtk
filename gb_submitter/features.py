@@ -500,7 +500,7 @@ def features(
         final_df, output_dir=f"{output_path}", single_file=single_file
     )
 
-    with open(os.path.join(output_path, "miuvig_features.tsv")) as file:
+    with open(os.path.join(output_path, "miuvig_features.tsv"), "w") as file:
         file.write(f"MIUVIG_parameter\tvalue\n")
         file.write(
             f"feat_pred\t{feat_pred};{feat_pred_version};-g {transl_table}, default otherwise\n"
