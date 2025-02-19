@@ -64,7 +64,7 @@ def table2asn(input, output, src_file, features, template, comments):
     Cmd += f"-t {template} "
     Cmd += f"-f {features} "
     Cmd += f"-src-file {src_file} "
-    Cmd += f"-Y {comments} "
+    Cmd += f"-w {comments} "
     Cmd += "-V v "  # Check for errors
     Cmd += "-a s"  # allow multifasta file
 

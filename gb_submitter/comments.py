@@ -236,6 +236,7 @@ def comments(taxonomy, features, miuvig, output):
     # 7. Reorder columns.
     desired_order = [
         "contig",
+        "StructuredCommentPrefix",
         "source_uvig",
         "assembly_software",
         "vir_ident_software",
@@ -246,11 +247,12 @@ def comments(taxonomy, features, miuvig, output):
         "number_contig",
         "feat_pred",
         "ref_db",
-        "sim_search_method",
+        "sim_search_meth",
         "size_frac",
         "virus_enrich_appr",
         "nucl_acid_ext",
         "wga_amp_appr",
+        "StructuredCommentSuffix",
     ]
     desired_existing = [col for col in desired_order if col in taxonomy_df.columns]
     remaining_cols = [col for col in taxonomy_df.columns if col not in desired_existing]
@@ -263,17 +265,7 @@ def comments(taxonomy, features, miuvig, output):
         os.makedirs(output_dir, exist_ok=True)
 
     ## 9. Write the combined DataFrame to a TSV file.
-    # taxonomy_df.to_csv(output + ".cmt", sep="\t", index=False)
-    # click.echo(f"Combined file written to {output}")
-
-    # 9. Write the combined DataFrame to a plain text file with actual tab characters
-    with open(output + ".cmt", "w") as file:
-        file.write("\\t".join(taxonomy_df.columns) + "\n")  # Write the header
-        for _, row in taxonomy_df.iterrows():
-            file.write(
-                "\\t".join(map(str, row)) + "\n"
-            )  # Write each row with tab-separated values
-
+    taxonomy_df.to_csv(output + ".cmt", sep="\t", index=False, encoding="utf-8")
     click.echo(f"Combined file written to {output}.cmt")
 
 
