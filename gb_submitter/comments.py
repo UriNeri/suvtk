@@ -245,13 +245,13 @@ def comments(taxonomy, features, miuvig, output):
 
     # 9. Write the combined DataFrame to a plain text file with actual tab characters
     with open(output, "w") as file:
-        file.write("\t".join(taxonomy_df.columns) + "\n")  # Write the header
+        file.write("\\t".join(taxonomy_df.columns) + "\n")  # Write the header
         for _, row in taxonomy_df.iterrows():
             file.write(
-                "\t".join(map(str, row)) + "\n"
+                "\\t".join(map(str, row)) + "\n"
             )  # Write each row with tab-separated values
 
-    click.echo(f"Combined file written to {output}")
+    click.echo(f"Combined file written to {output}.cmt")
 
 
 if __name__ == "__main__":
