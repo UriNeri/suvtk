@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Allowed value lists for various parameters
-uvig_source = [
+uvig_source_allowed = [
     "metagenome (not viral targeted)",
     "viral fraction metagenome (virome)",
     "sequence-targeted metagenome",
@@ -70,7 +70,7 @@ wga_amp_appr_allowed = [
 # For parameters that come from the merged files (features and miuvig)
 # we expect them to be one of the following allowed values (if present).
 allowed_values = {
-    "source_uvig": uvig_source,
+    "source_uvig": uvig_source_allowed,
     "detec_type": detec_type_allowed,
     "assembly_qual": assembly_qual_allowed,
     "virus_enrich_appr": virus_enrich_appr_allowed,

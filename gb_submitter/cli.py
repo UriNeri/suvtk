@@ -2,7 +2,7 @@ from gettext import gettext as _
 
 import click
 
-from gb_submitter import features, gbk2tbl, taxonomy, co_occurrence, table2asn
+from gb_submitter import features, gbk2tbl, taxonomy, co_occurrence, comments, table2asn
 
 
 class FullHelpGroup(click.Group):
@@ -40,6 +40,7 @@ cli.add_command(taxonomy)
 cli.add_command(features)
 cli.add_command(co_occurrence)
 cli.add_command(gbk2tbl)
+cli.add_command(comments)
 cli.add_command(table2asn)
 
 
