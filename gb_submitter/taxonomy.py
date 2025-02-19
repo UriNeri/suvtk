@@ -266,7 +266,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         # Add the predicted genome structure to the genome type record.
         # If no genome type record was found, create a minimal record.
         if genome_type_record is not None:
-            # genome_type_record.pop("taxon", None)
+            genome_type_record.pop("taxon")
             genome_type_record["contig"] = row["contig"]
             genome_type_record["pred_genome_struc"] = pred_struc
             gt_results.append(genome_type_record)
@@ -274,7 +274,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
             gt_results.append(
                 {
                     "contig": row["contig"],
-                    "taxon": "unclassified viruses",
+                    # "taxon": "unclassified viruses",
                     "pred_genome_type": "uncharacterized",
                     "pred_genome_struc": "undetermined",
                 }
@@ -282,6 +282,10 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     # Write the genome type DataFrame (with the added predicted structure) to file.
     genome_type_df = pd.DataFrame(gt_results)
+
+    ordered_columns = ["contig", "pred_genome_type", "pred_genome_struc"]
+    genome_type_df = genome_type_df[ordered_columns]
+
     genome_type_df.to_csv(
         os.path.join(output_path, "miuvig_taxonomy.tsv"),
         sep="\t",
