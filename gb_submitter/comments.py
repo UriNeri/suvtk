@@ -1,6 +1,7 @@
+import os
+
 import click
 import pandas as pd
-import os
 
 # Allowed value lists for various parameters
 uvig_source_allowed = [
@@ -80,6 +81,26 @@ allowed_values = {
 }
 
 
+def safe_read_csv(path, **kwargs):
+    """
+    Reads a CSV file using ASCII encoding. If a UnicodeDecodeError occurs,
+    raises a ClickException showing the offending character.
+    """
+    try:
+        return pd.read_csv(path, encoding="ascii", **kwargs)
+    except UnicodeDecodeError as e:
+        offending_bytes = e.object[e.start : e.end]
+        # Try decoding using UTF-8 to show the offending character
+        try:
+            offending_char = offending_bytes.decode("utf-8")
+        except Exception:
+            offending_char = repr(offending_bytes)
+        raise click.ClickException(
+            f"Only ASCII characters are allowed in file '{path}'. "
+            f"Offending character: {offending_char}. Error: {str(e)}"
+        )
+
+
 @click.command(short_help="Generate structured comment file based on MIUVIG standards.")
 @click.option(
     "-t",
@@ -127,7 +148,7 @@ allowed_values = {
 # )
 def comments(taxonomy, features, miuvig, output):
     # 1. Read the taxonomy file.
-    taxonomy_df = pd.read_csv(taxonomy, sep="\t")
+    taxonomy_df = safe_read_csv(taxonomy, sep="\t")
 
     # 2. Early check of taxonomy file columns (these come from taxonomy file itself)
     # Check pred_genome_type
@@ -153,10 +174,12 @@ def comments(taxonomy, features, miuvig, output):
 
     # 3. Read the features and miuvig files (key/value format) into dictionaries.
     features_dict = (
-        pd.read_csv(features, sep="\t").set_index("MIUVIG_parameter")["value"].to_dict()
+        safe_read_csv(features, sep="\t")
+        .set_index("MIUVIG_parameter")["value"]
+        .to_dict()
     )
     miuvig_dict = (
-        pd.read_csv(miuvig, sep="\t").set_index("MIUVIG_parameter")["value"].to_dict()
+        safe_read_csv(miuvig, sep="\t").set_index("MIUVIG_parameter")["value"].to_dict()
     )
 
     # 4. Merge the dictionaries (miuvig values take precedence).
@@ -240,11 +263,11 @@ def comments(taxonomy, features, miuvig, output):
         os.makedirs(output_dir, exist_ok=True)
 
     ## 9. Write the combined DataFrame to a TSV file.
-    # taxonomy_df.to_csv(os.path.join(output, ".cmt"), sep="\t", index=False)
+    # taxonomy_df.to_csv(output + ".cmt", sep="\t", index=False)
     # click.echo(f"Combined file written to {output}")
 
     # 9. Write the combined DataFrame to a plain text file with actual tab characters
-    with open(output, "w") as file:
+    with open(output + ".cmt", "w") as file:
         file.write("\\t".join(taxonomy_df.columns) + "\n")  # Write the header
         for _, row in taxonomy_df.iterrows():
             file.write(
