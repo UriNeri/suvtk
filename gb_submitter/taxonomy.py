@@ -1,3 +1,4 @@
+# TODO: save MIUVIG file with pred_genome_type and pred_genome_struc
 import importlib.resources
 import os
 import shutil
@@ -23,6 +24,25 @@ def load_segment_db():
     ).open("r") as file:
         db = pd.read_csv(file, sep="\t", header=0)
         return db
+
+
+def load_genome_type_db():
+    """
+    Load the genome structure database.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Data frame with the genome structure database.
+    """
+    with importlib.resources.files("gb_submitter.data").joinpath(
+        "genome_types.tsv"
+    ).open("r") as file:
+        db = pd.read_csv(file, sep="\t", header=0)
+        return db
+
+
+pred_genome_type = {""}
 
 
 @click.command(short_help="Assign virus taxonomy to sequences.")
@@ -79,12 +99,14 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     os.makedirs(output_path, exist_ok=True)
 
+    taxresult_path = os.path.join(output_path, "taxresults")
+
     # TODO Add RAM restrictions?
     # TODO Add error handling
     Cmd = "mmseqs easy-taxonomy "
     Cmd += f"{fasta_file} "  # input
     Cmd += f"{database} "  # database
-    Cmd += f"{output_path}/taxresults "  # output
+    Cmd += f"{taxresult_path} "  # output
     Cmd += "tmp "  # tmp
     Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
     Cmd += f"--threads {threads}"
@@ -92,7 +114,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     shutil.rmtree("tmp")
 
-    taxonomy = pd.read_csv(f"{output_path}/taxresults_lca.tsv", sep="\t", header=None)
+    taxonomy = pd.read_csv(f"{taxresult_path}_lca.tsv", sep="\t", header=None)
     taxonomy.rename(
         {
             0: "query",
@@ -109,7 +131,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         inplace=True,
     )
 
-    tophit = pd.read_csv(f"{output_path}/taxresults_tophit_aln", sep="\t", header=None)
+    tophit = pd.read_csv(f"{taxresult_path}_tophit_aln", sep="\t", header=None)
     tophit.rename(
         {
             0: "query",
@@ -161,10 +183,11 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         )
 
     tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy", "taxid"])
-    tax_df.to_csv(f"{output_path}/taxonomy.tsv", sep="\t", index=False)
+    tax_df.to_csv(os.path.join(output_path, "taxonomy.tsv"), sep="\t", index=False)
 
     # Load database file with segmented viruses
     segment_db = load_segment_db()
+    genome_type_db = load_genome_type_db()
 
     # Load taxonomy database
     taxdb = taxopy.TaxDb(
@@ -174,6 +197,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     segmented = False
     results = []
+    gt_results = []
 
     for index, row in tax_df.iterrows():
         lineage = taxopy.Taxon(row["taxid"], taxdb).name_lineage
@@ -201,6 +225,24 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
                         )
                 break
 
+        for taxa in lineage:
+            if taxa in genome_type_db["taxon"].values:
+                genome_type_record = (
+                    genome_type_db.loc[genome_type_db["taxon"] == taxa]
+                    .iloc[0]
+                    .to_dict()
+                )
+                gt_record = {"contig": row["contig"], **genome_type_record}
+                gt_results.append(gt_record)  # Append the updated dictionary
+                break
+
+    genome_type_df = pd.DataFrame(gt_results)
+    genome_type_df.to_csv(
+        os.path.join(output_path, "miuvig_taxonomy.tsv"),
+        sep="\t",
+        index=False,
+    )
+
     if segmented:
         click.echo(
             "\nYou might want to look into your data to see if you can identify the missing segments."
@@ -213,7 +255,9 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
             by="segmented_fraction", ascending=False
         )
         segmented_df.to_csv(
-            f"{output_path}/segmented_viruses_info.tsv", sep="\t", index=False
+            os.path.join(output_path, "segmented_viruses_info.tsv"),
+            sep="\t",
+            index=False,
         )
 
 

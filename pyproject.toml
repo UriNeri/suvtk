@@ -38,4 +38,4 @@ test = ["pytest"]
 where = ["gb_submitter"]
 
 [tool.setuptools.package-data]
-data = ["segmented_viruses.tsv"]
+data = ["segmented_viruses.tsv", "genome_types.tsv"]
