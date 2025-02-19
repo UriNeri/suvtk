@@ -239,8 +239,18 @@ def comments(taxonomy, features, miuvig, output):
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    # 9. Write the combined DataFrame to a TSV file.
-    taxonomy_df.to_csv(os.path.join(output, ".cmt"), sep="\t", index=False)
+    ## 9. Write the combined DataFrame to a TSV file.
+    # taxonomy_df.to_csv(os.path.join(output, ".cmt"), sep="\t", index=False)
+    # click.echo(f"Combined file written to {output}")
+
+    # 9. Write the combined DataFrame to a plain text file with actual tab characters
+    with open(output, "w") as file:
+        file.write("\t".join(taxonomy_df.columns) + "\n")  # Write the header
+        for _, row in taxonomy_df.iterrows():
+            file.write(
+                "\t".join(map(str, row)) + "\n"
+            )  # Write each row with tab-separated values
+
     click.echo(f"Combined file written to {output}")
 
 
