@@ -127,6 +127,14 @@ def safe_read_csv(path, **kwargs):
     help="TSV file with MIUVIG information.",
 )
 @click.option(
+    "-a",
+    "--assembly",
+    "assembly",
+    required=True,
+    type=click.Path(exists=True),
+    help="TSV file with Genbank Assembly information.",
+)
+@click.option(
     "-o",
     "--output",
     "output",
@@ -134,19 +142,7 @@ def safe_read_csv(path, **kwargs):
     type=click.Path(exists=False),
     help="Output filename.",
 )
-# @click.option(
-#    "--assembly-software",
-#    required=True,
-#    type=str,
-#    help="",
-# )
-# @click.option(
-#    "--seq-technology",
-#    required=True,
-#    type=str,
-#    help="",
-# )
-def comments(taxonomy, features, miuvig, output):
+def comments(taxonomy, features, miuvig, assembly, output):
     # 1. Read the taxonomy file.
     taxonomy_df = safe_read_csv(taxonomy, sep="\t")
 
@@ -182,13 +178,24 @@ def comments(taxonomy, features, miuvig, output):
         safe_read_csv(miuvig, sep="\t").set_index("MIUVIG_parameter")["value"].to_dict()
     )
 
+    assembly_dict = (
+        safe_read_csv(assembly, sep="\t")
+        .set_index("Assembly_parameter")["value"]
+        .to_dict()
+    )
+
     # 4. Merge the dictionaries (miuvig values take precedence).
     structured_comment_dict = {
-        "StructuredCommentPrefix": "MIUVIG:5.0-Data",
-        "StructuredCommentSuffix": "MIUVIG:5.0-Data",
+        "StructuredCommentPrefixM": "MIUVIG:5.0-Data",  # Suffix M to not
+        # "StructuredCommentSuffix": "MIUVIG:5.0-Data",
     }
 
-    merged_params = {**features_dict, **miuvig_dict, **structured_comment_dict}
+    merged_params = {
+        **structured_comment_dict,
+        **features_dict,
+        **miuvig_dict,
+        **assembly_dict,
+    }
 
     # 5. Early check on merged parameters:
     # 5a. Check formatting for software columns.
@@ -236,7 +243,7 @@ def comments(taxonomy, features, miuvig, output):
     # 7. Reorder columns.
     desired_order = [
         "contig",
-        "StructuredCommentPrefix",
+        "StructuredCommentPrefixM",
         "source_uvig",
         "assembly_software",
         "vir_ident_software",
@@ -252,12 +259,18 @@ def comments(taxonomy, features, miuvig, output):
         "virus_enrich_appr",
         "nucl_acid_ext",
         "wga_amp_appr",
-        "StructuredCommentSuffix",
+        # "StructuredCommentSuffix",
     ]
     desired_existing = [col for col in desired_order if col in taxonomy_df.columns]
     remaining_cols = [col for col in taxonomy_df.columns if col not in desired_existing]
     taxonomy_df = taxonomy_df[desired_existing + remaining_cols]
-    taxonomy_df.rename(columns={"contig": "SeqID"}, inplace=True)
+    taxonomy_df.rename(
+        columns={
+            "contig": "SeqID",
+            "StructuredCommentPrefixM": "StructuredCommentPrefix",
+        },
+        inplace=True,
+    )
 
     # 8. Ensure the output directory exists, but only if a directory is specified
     output_dir = os.path.dirname(output)
