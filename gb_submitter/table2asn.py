@@ -1,5 +1,7 @@
 # TODO: add date correction option
 # TODO: check/display stats file for errors (https://www.ncbi.nlm.nih.gov/genbank/validation/#BioSourceMissing)
+# TODO: add missing required miuvig params from src file? -> comments.py?:  collection_date, env_broad_scale, env_local_scale, env_medium, geo_loc_name, ivestigation_type, lat_lon, project_name, seq_meth
+# TODO: add option to make genbank file
 import os
 
 import click
@@ -65,7 +67,7 @@ def table2asn(input, output, src_file, features, template, comments):
     Cmd += f"-f {features} "
     Cmd += f"-src-file {src_file} "
     Cmd += f"-w {comments} "
-    Cmd += "-V v "  # Check for errors
+    Cmd += "-V vb "  # Check for errors
     Cmd += "-a s"  # allow multifasta file
 
     utils.Exec(Cmd)
