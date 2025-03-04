@@ -202,6 +202,15 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     segmented = False  # Flag to trigger the extra click.echo messages
 
     for index, row in tax_df.iterrows():
+        if row["taxonomy"] == "unclassified viruses":
+            gt_results.append(
+                {
+                    "contig": row["contig"],
+                    "pred_genome_type": "uncharacterized",
+                    "pred_genome_struc": "undetermined",
+                }
+            )
+            continue
         # Get the lineage for this taxid
         lineage = taxopy.Taxon(row["taxid"], taxdb).name_lineage
         segment_record = None
