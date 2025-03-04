@@ -251,7 +251,7 @@ def write_feature_entries(file, group):
     "--taxonomy",
     required=False,
     type=click.Path(exists=True),
-    help="Taxonomy file",
+    help="Taxonomy file to adjust sequence orientation if it belongs to a ssRNA(-) virus.",
 )
 @click.option(
     "--separate-files",
