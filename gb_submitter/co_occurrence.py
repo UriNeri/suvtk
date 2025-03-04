@@ -161,7 +161,7 @@ def co_occurrence(input, output, segments, lengths, prevalence, correlation, str
     analysis and contig length correction.
     """
 
-    print("Read in abundance table.")
+    click.echo("Read in abundance table.")
     abundance_df = pd.read_csv(input, sep="\t", index_col=0)
     df = calculate_proportion(abundance_df)
 
@@ -176,16 +176,16 @@ def co_occurrence(input, output, segments, lengths, prevalence, correlation, str
     n = len(filtered_df)
 
     if lengths:
-        print(f"Using contig length corrected abundance table.")
+        click.echo(f"Using contig length corrected abundance table.")
         lengths = pd.read_csv(
             lengths, sep="\t", index_col=0, header=None, names=["Contig", "length"]
         )
         df = filtered_df.div(lengths["length"], axis=0).dropna(how="all")
     else:
-        print(f"Using absence/presence abundance table.")
+        click.echo(f"Using absence/presence abundance table.")
         df = filtered_df.map(lambda x: 1 if x > 0 else x)
 
-    print(
+    click.echo(
         f"Calculate correlation matrix for {n} contigs (contig prevalence in samples set to {prevalence_threshold*100}%)."
     )
 
@@ -209,26 +209,24 @@ def co_occurrence(input, output, segments, lengths, prevalence, correlation, str
         correlation_results_df = segment_correlation_matrix(df, segment_list)
 
         if strict:
-            print("true")
             mask = (correlation_results_df >= cor_threshold).all(axis=1)
         else:
-            print("false")
             mask = (correlation_results_df >= cor_threshold).any(axis=1)
 
         corr_df = correlation_results_df[mask]
 
-        print(f"Write correlation matrix with a threshold of {cor_threshold}")
+        click.echo(f"Write correlation matrix with a threshold of {cor_threshold}")
         corr_df.to_csv(output + ".tsv", sep="\t", index=True)
     else:
         df_transposed = df.transpose()
         correlation_matrix = create_correlation_matrix(df_transposed)
 
-        print("Write correlation matrix.")
+        click.echo("Write correlation matrix.")
         correlation_matrix.to_csv(
             output + "_correlation_matrix.tsv", sep="\t", index=True
         )
 
-        print("Write pairwise dataframe.")
+        click.echo("Write pairwise dataframe.")
 
         related_contigs = correlation_matrix[
             correlation_matrix >= cor_threshold
@@ -244,7 +242,7 @@ def co_occurrence(input, output, segments, lengths, prevalence, correlation, str
         result_df.sort_values(by="Contig1", inplace=True)
         result_df.to_csv(output + "_related_contigs.tsv", sep="\t", index=False)
 
-    print("Finished.")
+    click.echo("Finished.")
 
 
 if __name__ == "__main__":
