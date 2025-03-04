@@ -1,4 +1,5 @@
 # TODO: save MIUVIG file with pred_genome_type and pred_genome_struc
+# TODO: Change to genomad taxonomy
 import importlib.resources
 import os
 import shutil

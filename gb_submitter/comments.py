@@ -1,3 +1,5 @@
+# TODO: add nr contigs count for segmented viruses (count duplicate isolate names)
+# TODO: change pred_genome_struc based on isolate names (>1 == segmented)
 import os
 
 import click
