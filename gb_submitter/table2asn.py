@@ -1,6 +1,6 @@
 # TODO: add date correction option
 # TODO: check/display stats file for errors (https://www.ncbi.nlm.nih.gov/genbank/validation/#BioSourceMissing) -> OKish
-# TODO: add missing required miuvig params from src file? -> comments.py?:  collection_date, env_broad_scale, env_local_scale, env_medium, geo_loc_name, ivestigation_type, lat_lon, project_name, seq_meth
+# TODO: add missing required miuvig params from src file? -> comments.py?:  env_broad_scale, env_local_scale, env_medium, investigation_type, project_name, seq_meth
 # TODO: add option to make genbank file -> made by default
 # TODO: add check for required columns (src, comments)
 import os
@@ -16,10 +16,17 @@ def process_comments(src_file, comments_file):
     Processes comments by updating the comments file based on the source file.
 
     This function reads a source file and a comments file into pandas DataFrames,
-    groups the source DataFrame by the "Isolate" column, and processes duplicates.
-    For each group of isolates with more than one entry, it updates the comments
-    file with the count of isolates, the majority predicted genome type (taken from
-    the comments file), and sets the predicted genome structure to "segmented".
+    ensures that the extra columns (collection_date, geo_loc_name, lat_lon) are inserted
+    right after the first column 'StructeredCommentPrefix' in the comments file, and then
+    groups the source DataFrame by the "Isolate" column to update duplicate-related fields.
+
+    For each group of isolates, it updates the comments file with:
+      - extra data: collection_date, geo_loc_name, and lat_lon (copied from Collection_date,
+        geo_loc_name, and Lat_Lon in the src file)
+      - if duplicates exist, it updates:
+            - the count of isolates,
+            - the majority predicted genome type (taken from the comments file), and
+            - sets the predicted genome structure to "segmented".
 
     Args:
         src_file (str): The file path to the source file in tab-separated format.
@@ -32,6 +39,25 @@ def process_comments(src_file, comments_file):
     src_df = pd.read_csv(src_file, sep="\t")
     comments_df = pd.read_csv(comments_file, sep="\t")
 
+    # Insert extra columns into comments_df after the first column 'StructuredCommentPrefix'
+    prefix_col = "StructuredCommentPrefix"
+    if prefix_col in comments_df.columns:
+        # Find the first occurrence of the prefix column
+        first_index = list(comments_df.columns).index(prefix_col)
+        cols_to_add = ["collection_date", "geo_loc_name", "lat_lon"]
+        for col in cols_to_add:
+            if col not in comments_df.columns:
+                first_index += 1
+                comments_df.insert(first_index, col, "")
+                click.echo(f"Inserted column '{col}' after the first '{prefix_col}'.")
+    else:
+        click.echo(
+            f"Warning: '{prefix_col}' not found in comments file. Extra columns will be appended."
+        )
+        for col in ["collection_date", "geo_loc_name", "lat_lon"]:
+            if col not in comments_df.columns:
+                comments_df[col] = ""
+
     click.echo("Grouping source file by 'Isolate'...")
     isolate_groups = src_df.groupby("Isolate")
     total_groups = len(isolate_groups)
@@ -39,17 +65,29 @@ def process_comments(src_file, comments_file):
 
     for isolate, group in isolate_groups:
         processed_groups += 1
-        # click.echo(
-        #    f"Processing isolate '{isolate}' ({processed_groups}/{total_groups})..."
-        # )
 
+        # Get extra data from the first row of the group
+        collection_date = group.iloc[0]["Collection_date"]
+        geo_loc_name = group.iloc[0]["geo_loc_name"]
+        lat_lon = group.iloc[0]["Lat_Lon"]
+
+        # Get the list of Sequence_IDs for the group
+        seqids = group["Sequence_ID"].tolist()
+
+        # Update extra fields for each Sequence_ID in this group
+        for seqid in seqids:
+            comments_df.loc[comments_df["Sequence_ID"] == seqid, "collection_date"] = (
+                collection_date
+            )
+            comments_df.loc[comments_df["Sequence_ID"] == seqid, "geo_loc_name"] = (
+                geo_loc_name
+            )
+            comments_df.loc[comments_df["Sequence_ID"] == seqid, "lat_lon"] = lat_lon
+
+        # If more than one entry exists for this isolate, update duplicate-related fields
         if len(group) > 1:
-            # Get the count of isolates for this group
             isolate_count = len(group)
             click.echo(f"  Found {isolate_count} entries for isolate '{isolate}'.")
-
-            # Get the list of Sequence_IDs for the group
-            seqids = group["Sequence_ID"].tolist()
 
             # Compute the majority pred_genome_type from the corresponding rows in comments_df
             subset_comments = comments_df[comments_df["Sequence_ID"].isin(seqids)]
@@ -63,9 +101,11 @@ def process_comments(src_file, comments_file):
                 )
             else:
                 majority_genome_type = "uncharacterized"
-                click.echo(f"  No 'pred_genome_type' found for isolate '{isolate}'.")
+                click.echo(
+                    f"  No 'pred_genome_type' found for isolate '{isolate}' in comments."
+                )
 
-            # Update the comments file for each Sequence_ID in this group
+            # Update additional fields for each Sequence_ID in this group
             for seqid in seqids:
                 comments_df.loc[
                     comments_df["Sequence_ID"] == seqid, "number_contig"
@@ -76,11 +116,14 @@ def process_comments(src_file, comments_file):
                 comments_df.loc[
                     comments_df["Sequence_ID"] == seqid, "pred_genome_struc"
                 ] = "segmented"
-                # click.echo(f"  Updated Sequence_ID '{seqid}'.")
-        # else:
-        #    click.echo(f"Only one entry for isolate '{isolate}'. No updates needed.")
 
-    # Save the updated comments file
+    # Rename the duplicate StructuredCommentPrefix column if needed
+    comments_df.rename(
+        columns={
+            "StructuredCommentPrefix.1": "StructuredCommentPrefix",
+        },
+        inplace=True,
+    )
     comments_df.to_csv(comments_file, sep="\t", index=False)
     click.echo("Comments file updated and saved.")
 

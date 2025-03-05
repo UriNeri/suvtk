@@ -1,4 +1,3 @@
-# TODO: add nr contigs count for segmented viruses (count duplicate isolate names)
 # TODO: add checkv file option and read miuvig data from here
 import os
 
