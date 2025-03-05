@@ -1,5 +1,6 @@
 # TODO: add nr contigs count for segmented viruses (count duplicate isolate names)
-# TODO: change pred_genome_struc based on isolate names (>1 == segmented)
+# TODO: change pred_genome_struc based on isolate names (>1 == segmented) -> table2asn.py?
+# TODO: add checkv file option and read miuvig data from here
 import os
 
 import click
@@ -268,7 +269,7 @@ def comments(taxonomy, features, miuvig, assembly, output):
     taxonomy_df = taxonomy_df[desired_existing + remaining_cols]
     taxonomy_df.rename(
         columns={
-            "contig": "SeqID",
+            "contig": "Sequence_ID",
             "StructuredCommentPrefixM": "StructuredCommentPrefix",
         },
         inplace=True,

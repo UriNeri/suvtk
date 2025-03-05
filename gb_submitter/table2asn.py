@@ -5,8 +5,57 @@
 import os
 
 import click
+import pandas as pd
 
 from gb_submitter import utils
+
+
+def process_comments(src_file, comments_file):
+    """
+    Processes comments by updating the comments file based on the source file.
+
+    This function reads a source file and a comments file into pandas DataFrames,
+    groups the source DataFrame by the "Isolate" column, and processes duplicates.
+    For each group of isolates with more than one entry, it updates the comments
+    file with the count of isolates, the majority predicted genome type, and sets
+    the predicted genome structure to "segmented".
+
+    Args:
+        src_file (str): The file path to the source file in tab-separated format.
+        comments_file (str): The file path to the comments file in tab-separated format.
+
+    Returns:
+        None
+    """
+    # Read the src_file and comments file into DataFrames
+    src_df = pd.read_csv(src_file, sep="\t")
+    comments_df = pd.read_csv(comments_file, sep="\t")
+
+    # Group by Isolate and process duplicates
+    isolate_groups = src_df.groupby("Isolate")
+
+    for isolate, group in isolate_groups:
+        if len(group) > 1:
+            # Get the count of Isolate value
+            isolate_count = len(group)
+
+            # Get the majority pred_genome_type
+            majority_genome_type = group["pred_genome_type"].mode()[0]
+
+            # Update the comments file
+            for seqid in group["Sequence_ID"]:
+                comments_df.loc[
+                    comments_df["Sequence_ID"] == seqid, "number_contig"
+                ] = isolate_count
+                comments_df.loc[
+                    comments_df["Sequence_ID"] == seqid, "pred_genome_type"
+                ] = majority_genome_type
+                comments_df.loc[
+                    comments_df["Sequence_ID"] == seqid, "pred_genome_struc"
+                ] = "segmented"
+
+    # Save the updated comments file
+    comments_df.to_csv(comments_file, sep="\t", index=False)
 
 
 @click.command(short_help="Generate .sqn submission for Genbank.")
@@ -60,6 +109,10 @@ from gb_submitter import utils
 )
 def table2asn(input, output, src_file, features, template, comments):
     """This command generates a .sqn file that you can send to gb-sub@ncbi.nlm.nih.gov"""
+
+    # Process the comments file based on the src_file
+    process_comments(src_file, comments)
+
     Cmd = "table2asn "
     Cmd += f"-i {input} "
     Cmd += f"-o {output}.sqn "
