@@ -1,5 +1,4 @@
 # TODO: add nr contigs count for segmented viruses (count duplicate isolate names)
-# TODO: change pred_genome_struc based on isolate names (>1 == segmented) -> table2asn.py?
 # TODO: add checkv file option and read miuvig data from here
 import os
 
