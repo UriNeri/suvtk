@@ -35,8 +35,5 @@ suvtk = "suvtk.cli:cli"
 [project.optional-dependencies]
 test = ["pytest"]
 
-[tool.setuptools.packages.find]
-where = ["suvtk"]
-
 [tool.setuptools.package-data]
 data = ["segmented_viruses.tsv", "genome_types.tsv"]
