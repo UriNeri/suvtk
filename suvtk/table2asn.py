@@ -8,7 +8,7 @@ import os
 import click
 import pandas as pd
 
-from gb_submitter import utils
+from suvtk import utils
 
 
 def process_comments(src_file, comments_file):

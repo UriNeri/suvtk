@@ -1,9 +1,9 @@
-# gb_submitter
+# suvtk (Submission of Uncultivated Viral genomes toolkit)
 
-[![PyPI](https://img.shields.io/pypi/v/gb_submitter.svg)](https://pypi.org/project/gb_submitter/)
-[![Changelog](https://img.shields.io/github/v/release/LanderDC/gb_submitter?include_prereleases&label=changelog)](https://github.com/LanderDC/gb_submitter/releases)
-[![Tests](https://github.com/LanderDC/gb_submitter/actions/workflows/test.yml/badge.svg)](https://github.com/LanderDC/gb_submitter/actions/workflows/test.yml)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/LanderDC/gb_submitter/blob/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/suvtk.svg)](https://pypi.org/project/suvtk/)
+[![Changelog](https://img.shields.io/github/v/release/LanderDC/suvtk?include_prereleases&label=changelog)](https://github.com/LanderDC/suvtk/releases)
+[![Tests](https://github.com/LanderDC/suvtk/actions/workflows/test.yml/badge.svg)](https://github.com/LanderDC/suvtk/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/LanderDC/suvtk/blob/master/LICENSE)
 
 Tool to submit viral sequences to Genbank.
 
@@ -11,23 +11,23 @@ Tool to submit viral sequences to Genbank.
 
 Install this tool using `pip`:
 ```bash
-pip install gb_submitter
+pip install suvtk
 ```
 ## Usage
 
 For help, run:
 ```bash
-gb_submitter --help
+suvtk --help
 ```
 You can also use:
 ```bash
-python -m gb_submitter --help
+python -m suvtk --help
 ```
 ## Development
 
 To contribute to this tool, first checkout the code. Then create a new virtual environment:
 ```bash
-cd gb_submitter
+cd suvtk
 python -m venv venv
 source venv/bin/activate
 ```

@@ -1,5 +1,5 @@
 [project]
-name = "gb_submitter"
+name = "suvtk"
 version = "0.1"
 description = "Tool to submit viral sequences to Genbank."
 readme = "README.md"
@@ -24,19 +24,19 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
-Homepage = "https://github.com/LanderDC/gb_submitter"
-Changelog = "https://github.com/LanderDC/gb_submitter/releases"
-Issues = "https://github.com/LanderDC/gb_submitter/issues"
-CI = "https://github.com/LanderDC/gb_submitter/actions"
+Homepage = "https://github.com/LanderDC/suvtk"
+Changelog = "https://github.com/LanderDC/suvtk/releases"
+Issues = "https://github.com/LanderDC/suvtk/issues"
+CI = "https://github.com/LanderDC/suvtk/actions"
 
 [project.scripts]
-gb_submitter = "gb_submitter.cli:cli"
+suvtk = "suvtk.cli:cli"
 
 [project.optional-dependencies]
 test = ["pytest"]
 
 [tool.setuptools.packages.find]
-where = ["gb_submitter"]
+where = ["suvtk"]
 
 [tool.setuptools.package-data]
 data = ["segmented_viruses.tsv", "genome_types.tsv"]

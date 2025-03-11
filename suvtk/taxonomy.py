@@ -1,5 +1,6 @@
 # TODO: save MIUVIG file with pred_genome_type and pred_genome_struc
 # TODO: Change to genomad taxonomy
+# TODO: mmseqs overwrite tmp file (mmseqs fails when command was previously aborted)
 import importlib.resources
 import os
 import shutil
@@ -8,7 +9,7 @@ import click
 import pandas as pd
 import taxopy
 
-from gb_submitter import utils
+from suvtk import utils
 
 
 def load_segment_db():

@@ -9,7 +9,7 @@ import pyrodigal_gv
 import taxopy
 from Bio.SeqIO import write
 
-from gb_submitter import utils
+from suvtk import utils
 
 # Define the valid genetic codes based on NCBI
 VALID_GENETIC_CODES = set(range(1, 7)) | set(range(9, 17)) | set(range(21, 32))

@@ -1,5 +1,6 @@
 from click.testing import CliRunner
-from gb_submitter.cli import cli
+
+from suvtk.cli import cli
 
 
 def test_version():
