@@ -2,32 +2,36 @@ taxon	pred_genome_type
 Adnaviria	dsDNA
 Duplodnaviria	dsDNA
 Ribozyviria	ssRNA(-)
-Helvetiavirae	dsDNA
+Singelaviria	dsDNA
+Bamfordvirae	dsDNA
 Loebvirae	ssDNA
 Sangervirae	ssDNA
 Ambiviricota	ssRNA(-)
+Artimaviricota	ssRNA
+Calorviricota	dsDNA
+Commensaviricota	ssDNA
 Cressdnaviricota	ssDNA
 Duplornaviricota	dsRNA
 Kitrinoviricota	ssRNA(+)
 Lenarviricota	ssRNA(+)
-Negarnaviricota	ssRNA(-)
-Nucleocytoviricota	dsDNA
+Haploviricotina	ssRNA(-)
 Ainoaviricetes	ssDNA
-Maveriviricetes	dsDNA
+Belvinaviricetes	dsDNA
+Insthoviricetes	ssRNA(-)
 Mouviricetes	ssDNA
 Naldaviricetes	dsDNA
+Orpoviricetes	ssRNA
 Papovaviricetes	dsDNA
 Pisoniviricetes	ssRNA(+)
-Polintoviricetes	dsDNA
 Quintoviricetes	ssDNA
 Stelpaviricetes	ssRNA(+)
-Tectiliviricetes	dsDNA
 Blubervirales	dsDNA
+Hareavirales	ssRNA(-)
+Tombendovirales	ssRNA(+)
 Yadokarivirales	ssRNA(+)
 Alphasatellitidae	ssDNA
 Amalgaviridae	dsRNA
 Ampullaviridae	dsDNA
-Anelloviridae	ssDNA
 Avsunviroidae	ssRNA
 Bartogtaviriformidae	dsDNA
 Belpaoviridae	ssRNA
@@ -36,18 +40,26 @@ Birnaviridae	dsRNA
 Brachygtaviriformidae	dsDNA
 Caulimoviridae	dsDNA
 Clavaviridae	dsDNA
+Cruliviridae	ssRNA(-)
 Curvulaviridae	dsRNA
+Eurekaviridae	dsDNA
+Fimoviridae	ssRNA(-)
 Fusariviridae	ssRNA(+)
 Fuselloviridae	dsDNA
 Globuloviridae	dsDNA
 Guttaviridae	dsDNA
 Hadakaviridae	ssRNA(+)
 Halspiviridae	dsDNA
+Hantaviridae	ssRNA(-)
+Huangdiviridae	dsDNA
 Hypoviridae	ssRNA(+)
 Itzamnaviridae	dsDNA
 Metaviridae	ssRNA
+Nipumfusiviridae	dsDNA; ssDNA
+Obscuriviridae	ssDNA
 Ovaliviridae	dsDNA
 Partitiviridae	dsRNA
+Peribunyaviridae	ssRNA(-)
 Permutotetraviridae	ssRNA(+)
 Picobirnaviridae	dsRNA
 Plasmaviridae	dsDNA
@@ -58,21 +70,46 @@ Pospiviroidae	ssRNA
 Pseudoviridae	ssRNA
 Retroviridae	ssRNA
 Rhodogtaviriformidae	dsDNA
-Sarthroviridae	ssRNA(+)
+Soropartitiviridae	dsRNA
 Spiraviridae	ssDNA
 Thaspiviridae	dsDNA
 Tolecusatellitidae	ssDNA
-Yaraviridae	dsDNA
-Albetovirus	ssRNA(+)
-Aumaivirus	ssRNA(+)
+Tonesaviridae	ssRNA(+)
+Tospoviridae	ssRNA(-)
+Tulasviridae	ssRNA(-)
 Betapleolipovirus	dsDNA
+Cicadellivirus	ssRNA(-)
 Dinodnavirus	dsDNA
+Feravirus	ssRNA(-)
 Gammapleolipovirus	dsDNA
-Papanivirus	ssRNA(+)
+Hymovirus	ssRNA(-)
 Rhizidiovirus	dsDNA
-Virtovirus	ssRNA(+)
+Sawastrivirus	ssRNA(-)
+Wuhivirus	ssRNA(-)
 Alphapleolipovirus finnoniense	ssDNA
 Alphapleolipovirus huluense	ssDNA
 Alphapleolipovirus italiense	dsDNA
 Alphapleolipovirus samutsakhonense	ssDNA
 Alphapleolipovirus thailandense	ssDNA
+Jonvirus eboris	ssRNA(-)
+Jonvirus mikadosis	ssRNA
+Jonvirus spilikinsis	ssRNA
+Orthophasmavirus aedis	ssRNA(-)
+Orthophasmavirus anophelae	ssRNA(-)
+Orthophasmavirus barstukorius	ssRNA(-)
+Orthophasmavirus chrysis	ssRNA(-)
+Orthophasmavirus coredoense	ssRNA(-)
+Orthophasmavirus culicis	ssRNA(-)
+Orthophasmavirus fushunense	ssRNA(-)
+Orthophasmavirus gandaense	ssRNA(-)
+Orthophasmavirus hubeiense	ssRNA(-)
+Orthophasmavirus kigluaikense	ssRNA(-)
+Orthophasmavirus miglotalis	ssRNA(-)
+Orthophasmavirus niuklukense	ssRNA(-)
+Orthophasmavirus obscurae	ssRNA
+Orthophasmavirus odonatus	ssRNA(-)
+Orthophasmavirus philoctetis	ssRNA(-)
+Orthophasmavirus sogatellae	ssRNA(-)
+Orthophasmavirus stecellulae	ssRNA
+Orthophasmavirus wuchangense	ssRNA(-)
+Orthophasmavirus wuhanense	ssRNA(-)
