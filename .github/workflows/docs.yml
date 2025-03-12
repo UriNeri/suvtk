@@ -1,6 +1,9 @@
 name: "Sphinx: Render docs"
 
-on: push
+on: 
+    push:
+        paths:
+            - 'docs/**'
 
 jobs:
   build:
