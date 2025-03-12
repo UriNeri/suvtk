@@ -7,12 +7,10 @@
 
 Tool to submit viral sequences to Genbank.
 
-## Installation
+## Documentation
 
-Install this tool using `pip`:
-```bash
-pip install suvtk
-```
+Documentation for the tool (including installation instruction) is available [here](https://landerdc.github.io/suvtk/)
+
 ## Usage
 
 For help, run:
