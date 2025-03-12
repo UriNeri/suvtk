@@ -116,6 +116,12 @@ def process_comments(src_file, comments_file):
                 comments_df.loc[
                     comments_df["Sequence_ID"] == seqid, "pred_genome_struc"
                 ] = "segmented"
+        else:
+            isolate_count = len(group)
+            for seqid in seqids:
+                comments_df.loc[
+                    comments_df["Sequence_ID"] == seqid, "number_contig"
+                ] = isolate_count
 
     # Rename the duplicate StructuredCommentPrefix column if needed
     comments_df.rename(
