@@ -246,7 +246,7 @@ def write_feature_entries(file, group):
     "--coding-complete",
     required=False,
     is_flag=True,
-    help="Do not predict incomplete genes (no stop codon) and only keep genomes that are 'coding complete' (>50% coding capacity).",
+    help="Do not predict incomplete genes (no stop codon) and only keep genomes that are 'coding complete' (>50% coding capacity). [This can not be turned off for now]",  # TODO: check on pyrodigal to implement fixed start codon
 )
 @click.option(
     "--taxonomy",
@@ -307,9 +307,11 @@ def features(
     orf_finder1 = pyrodigal_gv.ViralGeneFinder(
         meta=False, viral_only=True, closed=True, training_info=training_info
     )
-    orf_finder2 = pyrodigal_gv.ViralGeneFinder(
-        meta=False, viral_only=True, closed=[True, False], training_info=training_info
-    )
+
+    # Not possible for now because pyrodigal does not support closed=[True, False] yet
+    # orf_finder2 = pyrodigal_gv.ViralGeneFinder(
+    #    meta=False, viral_only=True, closed=[True, False], training_info=training_info
+    # )
 
     # Load taxonomy database
     if taxonomy:
@@ -334,12 +336,13 @@ def features(
             orf_finder1, record.seq
         )
 
+        # Commented out because it is not possible to use orf_finder2 yet
         # If coding capacity is too low, use orf_finder2 instead
-        if coding_capacity < 0.5 and not coding_complete:
-            # click.echo(f"Repredicting ORFs for {record.id} due to low coding capacity.")
-            genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
-                orf_finder2, record.seq
-            )
+        # if coding_capacity < 0.5 and not coding_complete:
+        #    # click.echo(f"Repredicting ORFs for {record.id} due to low coding capacity.")
+        #    genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
+        #        orf_finder2, record.seq
+        #    )
 
         if coding_capacity >= 0.5:
             # Adjust orientation based on lineage
