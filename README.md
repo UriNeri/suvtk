@@ -9,7 +9,7 @@ Tool to submit viral sequences to Genbank.
 
 ## Documentation
 
-Documentation for the tool (including installation instruction) is available [here](https://landerdc.github.io/suvtk/)
+Documentation for the tool (including installation instruction) is available <a href="https://landerdc.github.io/suvtk/" target="_blank">here</a>.
 
 ## Usage
 
