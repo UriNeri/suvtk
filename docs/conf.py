@@ -23,7 +23,6 @@ extensions = [
     "sphinx.ext.autodoc",  # Automatically document code from docstrings.
     "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings.
     "sphinx.ext.viewcode",  # Add links to highlighted source code.
-    "sphinx_autodoc_typehints",  # (Optional) Show type hints.
     "sphinx_copybutton",  # Add copy buttons to code blocks.
     "myst_parser",  # Markdown support.
 ]
