@@ -108,7 +108,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     # TODO Add error handling
     Cmd = "mmseqs easy-taxonomy "
     Cmd += f"{fasta_file} "  # input
-    Cmd += f"{database} "  # database
+    Cmd += os.path.join(database, "ictv_nr_db") + " "  # database
     Cmd += f"{taxresult_path} "  # output
     Cmd += "tmp "  # tmp
     Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
@@ -194,9 +194,9 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     # Load taxonomy database
     taxdb = taxopy.TaxDb(
-        nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
-        names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
-    )  # TODO: Set database path
+        nodes_dmp=os.path.join(database, "nodes.dmp"),
+        names_dmp=os.path.join(database, "names.dmp"),
+    )  # TODO: Set better database path?
 
     results = []  # For segmented virus details from segment_db
     gt_results = []  # For genome type records from genome_type_db

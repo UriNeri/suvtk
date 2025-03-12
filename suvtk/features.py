@@ -314,9 +314,9 @@ def features(
     # Load taxonomy database
     if taxonomy:
         taxdb = taxopy.TaxDb(
-            nodes_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/nodes.dmp",
-            names_dmp="/lustre1/scratch/337/vsc33750/ictv_db/ictv_taxdump/names.dmp",
-        )  # TODO: Set database path
+            nodes_dmp=os.path.join(database, "nodes.dmp"),
+            names_dmp=os.path.join(database, "names.dmp"),
+        )  # TODO: Set better database path?
         taxonomy_data = pd.read_csv(taxonomy, sep="\t")
 
     # Define output paths
@@ -409,7 +409,7 @@ def features(
 
     Cmd = "mmseqs easy-search "
     Cmd += f"{prot_path} "  # input
-    Cmd += f"{database} "  # database
+    Cmd += os.path.join(database, "bfvd") + " "  # database
     Cmd += f"{m8_path} "  # output
     Cmd += "tmp "  # temp directory
     Cmd += "-s 7.5 "
@@ -454,8 +454,8 @@ def features(
 
     m8_top = select_top_structure(m8)
     names_df = pd.read_csv(
-        f"{database}_uniprot_names.tsv", sep="\t"
-    )  # TODO find better solution
+        os.path.join(database, "bfvd_uniprot_names.tsv"), sep="\t"
+    )  # TODO find better solution?
 
     # remove all trailing strings within brackets from protein names
     names_df["Protein names"] = names_df["Protein names"].str.replace(
@@ -463,8 +463,8 @@ def features(
     )
 
     meta_df = pd.read_csv(
-        f"{database}_metadata.tsv", sep="\t", header=None
-    )  # TODO find better solution
+        os.path.join(database, "bfvd_metadata.tsv"), sep="\t", header=None
+    )  # TODO find better solution?
     meta_df.rename(
         {
             0: "Uniref_entry",
