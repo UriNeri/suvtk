@@ -1,4 +1,5 @@
 furo
+jinja2==3.0.3
 sphinx_autodoc_typehints
 sphinx_copybutton
 myst_parser
