@@ -4,6 +4,9 @@
 #Tests
 tests/test_data
 
+# Drawio
+*.bkp
+
 ### macOS ###
 # General
 .DS_Store
