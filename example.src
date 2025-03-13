@@ -1,2 +1,2 @@
-Sequence_ID	Organism	Collection_date	Country	Lat_Lon	Isolate	isolation_source	Biosample	Segment	Metagenomic
-									TRUE
+Sequence_ID	Organism	Collection_date	geo_loc_name	Lat_Lon	Isolate	Metagenome_source	Biosample	SRA	Segment	Metagenomic
+										TRUE

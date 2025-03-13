@@ -25,8 +25,11 @@ extensions = [
     "sphinx.ext.viewcode",  # Add links to highlighted source code.
     "sphinx_autodoc_typehints",  # (Optional) Show type hints.
     "sphinx_copybutton",  # Add copy buttons to code blocks.
+    "sphinx_design",
     "myst_parser",  # Markdown support.
 ]
+
+myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath"]
 
 source_suffix = [".rst", ".md"]
 

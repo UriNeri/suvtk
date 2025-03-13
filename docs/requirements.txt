@@ -2,4 +2,5 @@ furo
 jinja2>=3.1.6
 sphinx_autodoc_typehints
 sphinx_copybutton
+sphinx_design
 myst_parser
