@@ -79,9 +79,9 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd += "tmp "  # tmp
     Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
     Cmd += f"--threads {threads}"
-    #utils.Exec(Cmd)
+    utils.Exec(Cmd)
 
-    #shutil.rmtree("tmp")
+    shutil.rmtree("tmp")
 
     taxonomy = pd.read_csv(f"{taxresult_path}_lca.tsv", sep="\t", header=None)
     taxonomy.rename(
