@@ -316,7 +316,7 @@ def features(
         meta=False, viral_only=True, closed=True, training_info=training_info
     )
 
-    # Not possible for now because pyrodigal does not support closed=[True, False] yet
+    # Not possible for now because pyrodigal does not support 'closed=[True, False]' yet
     # orf_finder2 = pyrodigal_gv.ViralGeneFinder(
     #    meta=False, viral_only=True, closed=[True, False], training_info=training_info
     # )

@@ -2,7 +2,7 @@ from gettext import gettext as _
 
 import click
 
-from suvtk import co_occurrence, comments, features, gbk2tbl, table2asn, taxonomy
+from suvtk import co_occurrence, comments, features, gbk2tbl, table2asn, taxonomy, segment_info
 
 
 class FullHelpGroup(click.Group):
@@ -38,6 +38,7 @@ def cli():
 
 cli.add_command(taxonomy)
 cli.add_command(features)
+cli.add_command(segment_info)
 cli.add_command(co_occurrence)
 cli.add_command(gbk2tbl)
 cli.add_command(comments)
