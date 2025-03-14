@@ -38,7 +38,7 @@ DNA | dsDNA | ssDNA | RNA | dsRNA | ssRNA | ssRNA (+) | ssRNA (-) | mixed | unch
 You can provide your own taxonomy to the other submodules (eg. `suvtk features`, `suvtk comments`), if it is a tsv file in following format:
 | contig | taxonomy | taxid |
 |--------|----------|-------:|
-| <sequence_name_as_in_fasta> | <lowest fitting taxon> sp. | <taxid> |
+| \<sequence_name_as_in_fasta\> | \<lowest fitting taxon\> sp. | \<taxid\> |
 |...|...|...|
 ```
 
