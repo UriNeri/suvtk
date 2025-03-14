@@ -7,6 +7,7 @@ import click
 import pandas as pd
 import taxopy
 
+
 def load_segment_db():
     """
     Load the segmented viruses database.
@@ -73,15 +74,17 @@ def run_segment_info(tax_df, database, output_path):
 
     for index, row in tax_df.iterrows():
         if row["taxonomy"] == "unclassified viruses":
-            gt_results.append({
-                "contig": row["contig"],
-                "pred_genome_type": "uncharacterized",
-                "pred_genome_struc": "undetermined",
-            })
+            gt_results.append(
+                {
+                    "contig": row["contig"],
+                    "pred_genome_type": "uncharacterized",
+                    "pred_genome_struc": "undetermined",
+                }
+            )
             continue
 
         # Remove trailing " sp." before lookup.
-        tax = row["taxonomy"].removesuffix(' sp.')
+        tax = row["taxonomy"].removesuffix(" sp.")
         try:
             taxid = taxopy.taxid_from_name(tax, taxdb)
             lineage = taxopy.Taxon(taxid[0], taxdb).name_lineage
@@ -90,20 +93,24 @@ def run_segment_info(tax_df, database, output_path):
                 f"Warning: '{tax}' is not part of the official ICTV taxonomy. "
                 f"Genome type and structure cannot be accessed for {row['contig']}."
             )
-            gt_results.append({
-                "contig": row["contig"],
-                "pred_genome_type": "uncharacterized",
-                "pred_genome_struc": "undetermined",
-            })
+            gt_results.append(
+                {
+                    "contig": row["contig"],
+                    "pred_genome_type": "uncharacterized",
+                    "pred_genome_struc": "undetermined",
+                }
+            )
             continue
-        
+
         segment_record = None
         genome_type_record = None
 
         # Loop once over the lineage to get both records.
         for taxa in lineage:
             if segment_record is None and taxa in segment_db["taxon"].values:
-                segment_record = segment_db.loc[segment_db["taxon"] == taxa].iloc[0].to_dict()
+                segment_record = (
+                    segment_db.loc[segment_db["taxon"] == taxa].iloc[0].to_dict()
+                )
                 record = {"contig": row["contig"], **segment_record}
                 results.append(record)
                 if float(segment_record["segmented_fraction"]) >= 25:
@@ -124,8 +131,12 @@ def run_segment_info(tax_df, database, output_path):
                             f"{segment_record['majority_segment']} segments."
                         )
             if genome_type_record is None and taxa in genome_type_db["taxon"].values:
-                genome_type_record = genome_type_db.loc[genome_type_db["taxon"] == taxa].iloc[0].to_dict()
-            
+                genome_type_record = (
+                    genome_type_db.loc[genome_type_db["taxon"] == taxa]
+                    .iloc[0]
+                    .to_dict()
+                )
+
             if segment_record is not None and genome_type_record is not None:
                 break
 
@@ -149,23 +160,40 @@ def run_segment_info(tax_df, database, output_path):
             genome_type_record["pred_genome_struc"] = pred_struc
             gt_results.append(genome_type_record)
         else:
-            gt_results.append({
-                "contig": row["contig"],
-                "pred_genome_type": "uncharacterized",
-                "pred_genome_struc": "undetermined",
-            })
+            gt_results.append(
+                {
+                    "contig": row["contig"],
+                    "pred_genome_type": "uncharacterized",
+                    "pred_genome_struc": "undetermined",
+                }
+            )
 
-    genome_type_df = pd.DataFrame(gt_results)[["contig", "pred_genome_type", "pred_genome_struc"]]
-    genome_type_df.to_csv(os.path.join(output_path, "miuvig_taxonomy.tsv"), sep="\t", index=False)
+    genome_type_df = pd.DataFrame(gt_results)[
+        ["contig", "pred_genome_type", "pred_genome_struc"]
+    ]
+    genome_type_df.to_csv(
+        os.path.join(output_path, "miuvig_taxonomy.tsv"), sep="\t", index=False
+    )
 
     if segmented:
         click.echo("\nYou might want to check your data for missing segments.")
     if results:
-        segmented_df = pd.DataFrame(results).sort_values(by="segmented_fraction", ascending=False)
-        segmented_df.to_csv(os.path.join(output_path, "segmented_viruses_info.tsv"), sep="\t", index=False)
+        segmented_df = pd.DataFrame(results).sort_values(
+            by="segmented_fraction", ascending=False
+        )
+        segmented_df.to_csv(
+            os.path.join(output_path, "segmented_viruses_info.tsv"),
+            sep="\t",
+            index=False,
+        )
+        click.echo(
+            "\nContig information on segmented viruses written to 'segmented_viruses_info.tsv'."
+        )
 
 
-@click.command(short_help="Get information on possible segmented viruses based on their taxonomy.")
+@click.command(
+    short_help="Get information on possible segmented viruses based on their taxonomy."
+)
 @click.option(
     "--taxonomy",
     required=True,

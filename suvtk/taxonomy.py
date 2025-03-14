@@ -7,7 +7,8 @@ import shutil
 import click
 import pandas as pd
 
-from suvtk import utils, segment_info
+from suvtk import segment_info, utils
+
 
 @click.command(short_help="Assign virus taxonomy to sequences.")
 @click.option(
@@ -62,7 +63,6 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
         )
 
     os.makedirs(output_path, exist_ok=True)
-    
 
     taxresult_path = os.path.join(output_path, "taxresults")
 
