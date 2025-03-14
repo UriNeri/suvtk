@@ -133,8 +133,8 @@ def get_lineage(record_id, taxonomy_data, taxdb):
     record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
     if record_taxonomy.empty:
         return []
-    #taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
-    tax = record_taxonomy["taxonomy"].item().removesuffix(' sp.')
+    # taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
+    tax = record_taxonomy["taxonomy"].item().removesuffix(" sp.")
     if tax == "unclassified viruses":
         return []
     try:
@@ -142,7 +142,9 @@ def get_lineage(record_id, taxonomy_data, taxdb):
         lineage = taxopy.Taxon(taxid[0], taxdb).name_lineage
         return lineage
     except IndexError:
-        click.echo(f"Warning: '{tax}' is not part of the official ICTV taxonomy. Its lineage can not be looked up and therefore the nucleotide reorientation could not be performed for {record_taxonomy["contig"].item()}")
+        click.echo(
+            f"Warning: '{tax}' is not part of the official ICTV taxonomy. Its lineage can not be looked up and therefore the nucleotide reorientation could not be performed for {record_taxonomy['contig'].item()}"
+        )
         return []
 
 
