@@ -69,7 +69,8 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     # TODO Add RAM restrictions?
     # TODO Add error handling
     # TODO removing tmp before running mmseqs might be dangerous
-    shutil.rmtree("tmp")
+    if os.path.exists("tmp"):
+        shutil.rmtree("tmp")
 
     Cmd = "mmseqs easy-taxonomy "
     Cmd += f"{fasta_file} "  # input
@@ -78,9 +79,9 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     Cmd += "tmp "  # tmp
     Cmd += "-s 7.5 --blacklist '' --tax-lineage 1 "
     Cmd += f"--threads {threads}"
-    utils.Exec(Cmd)
+    #utils.Exec(Cmd)
 
-    shutil.rmtree("tmp")
+    #shutil.rmtree("tmp")
 
     taxonomy = pd.read_csv(f"{taxresult_path}_lca.tsv", sep="\t", header=None)
     taxonomy.rename(
@@ -151,7 +152,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy"])
     tax_df.to_csv(os.path.join(output_path, "taxonomy.tsv"), sep="\t", index=False)
 
-    segment_info.segment_info(tax_df, database, output_path)
+    segment_info.run_segment_info(tax_df, database, output_path)
 
 
 if __name__ == "__main__":
