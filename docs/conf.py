@@ -29,7 +29,7 @@ extensions = [
     "myst_parser",  # Markdown support.
 ]
 
-myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath"]
+myst_enable_extensions = ["colon_fence"]
 
 source_suffix = [".rst", ".md"]
 
