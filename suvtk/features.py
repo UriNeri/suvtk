@@ -133,9 +133,17 @@ def get_lineage(record_id, taxonomy_data, taxdb):
     record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
     if record_taxonomy.empty:
         return []
-    taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
-    lineage = taxopy.Taxon(taxid_dict[record_id], taxdb).name_lineage
-    return lineage
+    #taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
+    tax = record_taxonomy["taxonomy"].item().removesuffix(' sp.')
+    if tax == "unclassified viruses":
+        return []
+    try:
+        taxid = taxopy.taxid_from_name(tax, taxdb)
+        lineage = taxopy.Taxon(taxid[0], taxdb).name_lineage
+        return lineage
+    except IndexError:
+        click.echo(f"Warning: '{tax}' is not part of the official ICTV taxonomy. Its lineage can not be looked up and therefore the nucleotide reorientation could not be performed for {record_taxonomy["contig"].item()}")
+        return []
 
 
 # Functions to generate and save NCBI feature tables
