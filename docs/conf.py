@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import suvtk
+
 sys.path.insert(0, str(Path("..", "suvtk").resolve()))
 
 # Configuration file for the Sphinx documentation builder.
