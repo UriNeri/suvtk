@@ -163,16 +163,18 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
 
     # 3. Read the features and miuvig files (key/value format) into dictionaries.
     features_dict = (
-        safe_read_csv(features, sep="\t")
+        utils.safe_read_csv(features, sep="\t")
         .set_index("MIUVIG_parameter")["value"]
         .to_dict()
     )
     miuvig_dict = (
-        safe_read_csv(miuvig, sep="\t").set_index("MIUVIG_parameter")["value"].to_dict()
+        utils.safe_read_csv(miuvig, sep="\t")
+        .set_index("MIUVIG_parameter")["value"]
+        .to_dict()
     )
 
     assembly_dict = (
-        safe_read_csv(assembly, sep="\t")
+        utils.safe_read_csv(assembly, sep="\t")
         .set_index("Assembly_parameter")["value"]
         .to_dict()
     )
