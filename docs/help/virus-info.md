@@ -1,8 +1,8 @@
-# segment-info
+# virus-info
 
 ## Overview
 
-The `segment-info` subcommand identifies and reports details on potential segmented viruses based on their taxonomy. It cross-references a user-supplied taxonomy file with a segmented viruses database and a genome type database to predict the genome structure and type for each contig. Additionally, it outputs information for further investigation if a high fraction of viruses within a taxon are segmented.
+The `virus-info` subcommand identifies and reports details on potential segmented viruses based on their taxonomy. It cross-references a user-supplied taxonomy file with a segmented viruses database and a genome type database to predict the genome structure and type for each contig. Additionally, it outputs information for further investigation if a high fraction of viruses within a taxon are segmented.
 
 ## Required Input
 
