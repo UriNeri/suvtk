@@ -1,14 +1,19 @@
 taxon	pred_genome_type
-Monodnaviria	DNA
-Riboviria	uncharacterized
-Varidnaviria	DNA
 Adnaviria	dsDNA
 Duplodnaviria	dsDNA
 Ribozyviria	ssRNA(-)
 Singelaviria	dsDNA
+Monodnaviria	DNA
+Riboviria	uncharacterized
+Varidnaviria	DNA
 Bamfordvirae	dsDNA
 Loebvirae	ssDNA
 Sangervirae	ssDNA
+Abadenavirae	DNA
+Orthornavirae	RNA
+Pararnavirae	uncharacterized
+Shotokuvirae	DNA
+Trapavirae	DNA
 Ambiviricota	ssRNA(-)
 Artimaviricota	ssRNA
 Calorviricota	dsDNA
@@ -17,7 +22,14 @@ Cressdnaviricota	ssDNA
 Duplornaviricota	dsRNA
 Kitrinoviricota	ssRNA(+)
 Lenarviricota	ssRNA(+)
+Artverviricota	uncharacterized
+Cossaviricota	DNA
+Negarnaviricota	RNA
+Pisuviricota	RNA
+Produgelaviricota	DNA
+Saleviricota	DNA
 Haploviricotina	ssRNA(-)
+Polyploviricotina	RNA
 Ainoaviricetes	ssDNA
 Belvinaviricetes	dsDNA
 Insthoviricetes	ssRNA(-)
@@ -28,10 +40,18 @@ Papovaviricetes	dsDNA
 Pisoniviricetes	ssRNA(+)
 Quintoviricetes	ssDNA
 Stelpaviricetes	ssRNA(+)
+Bunyaviricetes	RNA
+Duplopiviricetes	RNA
+Huolimaviricetes	DNA
+Revtraviricetes	uncharacterized
 Blubervirales	dsDNA
 Hareavirales	ssRNA(-)
 Tombendovirales	ssRNA(+)
 Yadokarivirales	ssRNA(+)
+Durnavirales	RNA
+Elliovirales	RNA
+Haloruvirales	DNA
+Ortervirales	uncharacterized
 Alphasatellitidae	ssDNA
 Amalgaviridae	dsRNA
 Ampullaviridae	dsDNA
@@ -58,7 +78,7 @@ Huangdiviridae	dsDNA
 Hypoviridae	ssRNA(+)
 Itzamnaviridae	dsDNA
 Metaviridae	ssRNA
-Nipumfusiviridae	dsDNA; ssDNA
+Nipumfusiviridae	DNA
 Obscuriviridae	ssDNA
 Ovaliviridae	dsDNA
 Partitiviridae	dsRNA
@@ -80,6 +100,8 @@ Tolecusatellitidae	ssDNA
 Tonesaviridae	ssRNA(+)
 Tospoviridae	ssRNA(-)
 Tulasviridae	ssRNA(-)
+Phasmaviridae	RNA
+Pleolipoviridae	DNA
 Betapleolipovirus	dsDNA
 Cicadellivirus	ssRNA(-)
 Dinodnavirus	dsDNA
@@ -89,6 +111,9 @@ Hymovirus	ssRNA(-)
 Rhizidiovirus	dsDNA
 Sawastrivirus	ssRNA(-)
 Wuhivirus	ssRNA(-)
+Alphapleolipovirus	DNA
+Jonvirus	RNA
+Orthophasmavirus	RNA
 Alphapleolipovirus finnoniense	ssDNA
 Alphapleolipovirus huluense	ssDNA
 Alphapleolipovirus italiense	dsDNA

@@ -21,12 +21,10 @@ genome_types <- vmr |>
     Genome == "dsDNA-RT" ~ "dsDNA",
     Genome == "ssRNA-RT" ~ "ssRNA",
     Genome == "ssDNA(-)" ~ "ssDNA",
+    Genome == "dsDNA; ssDNA" ~ "DNA",
     T ~ Genome
   )) |>
   distinct()
-
-vmr |>
-  filter(Realm == "Riboviria" & Genome == "dsDNA")
 
 # Define taxonomic levels in hierarchical order (from most to least inclusive)
 tax_levels <- c(
@@ -35,17 +33,6 @@ tax_levels <- c(
   "Order", "Suborder", "Family", "Subfamily",
   "Genus", "Subgenus", "Species"
 )
-
-# Summarize the genome types for the realms with multiple genome types
-realms <- genome_types |>
-  select(Realm, Genome) |>
-  filter(!is.na(Realm)) |>
-  distinct() |>
-  group_by(Realm) |>
-  filter(n() > 1) |>
-  mutate(Type = ifelse(str_detect(Genome, "DNA"), "DNA", "RNA")) |>
-  summarize(Type = ifelse(n_distinct(Type) > 1, "uncharacterized", first(Type)), , Level = "Realm", .groups = "drop") |>
-  rename(Taxon = Realm, Genome = Type)
 
 # We'll store our summarized rows here.
 summaries <- tibble()
@@ -67,8 +54,21 @@ for (lvl in tax_levels) {
     rename(Taxon = !!sym(lvl)) |>
     mutate(Level = lvl)
 
+  # For not uniform taxa keep the DNA, RNA or uncharacterized (both DNA and RNA in taxon level) genome type
+  not_uniform_taxa <- remaining |>
+    filter(!is.na(.data[[lvl]])) |>
+    group_by(across(all_of(lvl))) |>
+    # Only keep groups where Genome is not uniform:
+    filter(n_distinct(Genome) > 1) |>
+    mutate(Type = ifelse(str_detect(Genome, "DNA"), "DNA", "RNA")) |>
+    summarize(Type = ifelse(n_distinct(Type) > 1, "uncharacterized", first(Type)), .groups = "drop") |>
+    mutate(Type = as.character(Type)) |>
+    rename(Taxon = !!sym(lvl), Genome = Type) |>
+    mutate(Level = lvl)
+
+
   # Append these uniform groups to our summaries.
-  summaries <- bind_rows(summaries, uniform_taxa)
+  summaries <- bind_rows(summaries, uniform_taxa, not_uniform_taxa)
 
   # Remove all rows that belong to a taxon that has been summarized at this level.
   # (This ensures we don’t also output the lower-level rows from a group that is uniform.)
@@ -77,7 +77,7 @@ for (lvl in tax_levels) {
 
 # Optionally, you can add any remaining (non-uniform) rows.
 # (For example, if some viruses never reached a uniform group at any level.)
-final_result <- bind_rows(realms, summaries, remaining)
+final_result <- bind_rows(summaries, remaining)
 
 # Write to TSV
 final_result |>
