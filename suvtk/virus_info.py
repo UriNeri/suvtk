@@ -218,7 +218,7 @@ def run_segment_info(tax_df, database, output_path):
     type=click.Path(exists=False),
     help="Output directory",
 )
-def segment_info(taxonomy, database, output_path):
+def virus_info(taxonomy, database, output_path):
     """
     This command provides info on potentially segmented viruses based on the taxonomy and also outputs a file with the genome type and genome structure for the MIUVIG structured comment.
     """
@@ -233,4 +233,4 @@ def segment_info(taxonomy, database, output_path):
 
 
 if __name__ == "__main__":
-    segment_info()
+    virus_info()

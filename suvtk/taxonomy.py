@@ -7,7 +7,7 @@ import shutil
 import click
 import pandas as pd
 
-from suvtk import segment_info, utils
+from suvtk import utils, virus_info
 
 
 @click.command(short_help="Assign virus taxonomy to sequences.")
@@ -152,7 +152,7 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
     tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy"])
     tax_df.to_csv(os.path.join(output_path, "taxonomy.tsv"), sep="\t", index=False)
 
-    segment_info.run_segment_info(tax_df, database, output_path)
+    virus_info.run_segment_info(tax_df, database, output_path)
 
 
 if __name__ == "__main__":
