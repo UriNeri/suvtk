@@ -1,4 +1,5 @@
 # TODO: add count for sequences without ORF prediction
+# TODO: mmseqs log to file for clarity
 import os
 import shutil
 
@@ -329,7 +330,7 @@ def features(
             nodes_dmp=os.path.join(database, "nodes.dmp"),
             names_dmp=os.path.join(database, "names.dmp"),
         )  # TODO: Set better database path?
-        taxonomy_data = pd.read_csv(taxonomy, sep="\t")
+        taxonomy_data = utils.safe_read_csv(taxonomy, sep="\t")
 
     # Define output paths
     prot_path = os.path.join(output_path, "proteins.faa")
@@ -436,7 +437,7 @@ def features(
     aligner = "MMseqs2"
     aligner_version = utils.Exec("mmseqs version", capture=True).strip()
 
-    m8 = pd.read_csv(
+    m8 = utils.safe_read_csv(
         m8_path,
         sep="\t",
         header=None,
@@ -466,7 +467,7 @@ def features(
     m8["aligner_version"] = aligner_version
 
     m8_top = select_top_structure(m8)
-    names_df = pd.read_csv(
+    names_df = utils.safe_read_csv(
         os.path.join(database, "bfvd_uniprot_names.tsv"), sep="\t"
     )  # TODO find better solution?
 
@@ -475,7 +476,7 @@ def features(
         r"[\(\[].*?[\)\]]$", "", regex=True
     )
 
-    meta_df = pd.read_csv(
+    meta_df = utils.safe_read_csv(
         os.path.join(database, "bfvd_metadata.tsv"), sep="\t", header=None
     )  # TODO find better solution?
     meta_df.rename(

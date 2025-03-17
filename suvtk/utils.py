@@ -57,3 +57,23 @@ def Exec(CmdLine, fLog=None, capture=False):
         log_or_print(f"Error code {e.returncode}\n", is_error=True)
 
         raise  # Re-raise the exception
+
+
+def safe_read_csv(path, **kwargs):
+    """
+    Reads a CSV file using ASCII encoding. If a UnicodeDecodeError occurs,
+    raises a ClickException showing the offending character.
+    """
+    try:
+        return pd.read_csv(path, encoding="ascii", **kwargs)
+    except UnicodeDecodeError as e:
+        offending_bytes = e.object[e.start : e.end]
+        # Try decoding using UTF-8 to show the offending character
+        try:
+            offending_char = offending_bytes.decode("utf-8")
+        except Exception:
+            offending_char = repr(offending_bytes)
+        raise click.ClickException(
+            f"Only ASCII characters are allowed in file '{path}'. "
+            f"Offending character: {offending_char}. Error: {str(e)}"
+        )

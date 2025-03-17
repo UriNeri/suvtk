@@ -7,6 +7,8 @@ import click
 import pandas as pd
 import taxopy
 
+from suvtk import utils
+
 
 def load_segment_db():
     """
@@ -22,7 +24,7 @@ def load_segment_db():
         .joinpath("segmented_viruses.tsv")
         .open("r") as file
     ):
-        db = pd.read_csv(file, sep="\t", header=0)
+        db = utils.safe_read_csv(file, sep="\t", header=0)
         return db
 
 
@@ -40,7 +42,7 @@ def load_genome_type_db():
         .joinpath("genome_types.tsv")
         .open("r") as file
     ):
-        db = pd.read_csv(file, sep="\t", header=0)
+        db = utils.safe_read_csv(file, sep="\t", header=0)
         return db
 
 
@@ -226,7 +228,7 @@ def segment_info(taxonomy, database, output_path):
         )
     os.makedirs(output_path, exist_ok=True)
 
-    tax_df = pd.read_csv(taxonomy, sep="\t")
+    tax_df = utils.safe_read_csv(taxonomy, sep="\t")
     run_segment_info(tax_df, database, output_path)
 
 
