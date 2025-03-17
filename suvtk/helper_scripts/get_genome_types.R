@@ -1,3 +1,4 @@
+# TODO: add the genome type for realms with multiple genome types within DNA or RNA (eg. Riboviria -> RNA)
 library(tidyverse)
 
 temp_file <- tempfile(fileext = ".xlsx")
@@ -25,6 +26,9 @@ genome_types <- vmr |>
   )) |>
   distinct()
 
+vmr |>
+  filter(Realm == "Riboviria" & Genome == "dsDNA")
+
 # Define taxonomic levels in hierarchical order (from most to least inclusive)
 tax_levels <- c(
   "Realm", "Subrealm", "Kingdom", "Subkingdom",
@@ -32,6 +36,17 @@ tax_levels <- c(
   "Order", "Suborder", "Family", "Subfamily",
   "Genus", "Subgenus", "Species"
 )
+
+# Summarize the genome types for the realms with multiple genome types
+realms <- genome_types |>
+  select(Realm, Genome) |>
+  filter(!is.na(Realm)) |>
+  distinct() |>
+  group_by(Realm) |>
+  filter(n() > 1) |>
+  mutate(Type = ifelse(str_detect(Genome, "DNA"), "DNA", "RNA")) |>
+  summarize(Type = ifelse(n_distinct(Type) > 1, "uncharacterized", first(Type)), , Level = "Realm", .groups = "drop") |>
+  rename(Taxon = Realm, Genome = Type)
 
 # We'll store our summarized rows here.
 summaries <- tibble()
@@ -63,7 +78,7 @@ for (lvl in tax_levels) {
 
 # Optionally, you can add any remaining (non-uniform) rows.
 # (For example, if some viruses never reached a uniform group at any level.)
-final_result <- bind_rows(summaries, remaining)
+final_result <- bind_rows(realms, summaries, remaining)
 
 # Write to TSV
 final_result |>

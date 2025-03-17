@@ -1,4 +1,7 @@
 taxon	pred_genome_type
+Monodnaviria	DNA
+Riboviria	uncharacterized
+Varidnaviria	DNA
 Adnaviria	dsDNA
 Duplodnaviria	dsDNA
 Ribozyviria	ssRNA(-)
