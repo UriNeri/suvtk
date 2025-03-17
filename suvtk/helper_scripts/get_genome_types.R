@@ -1,4 +1,3 @@
-# TODO: add the genome type for realms with multiple genome types within DNA or RNA (eg. Riboviria -> RNA)
 library(tidyverse)
 
 temp_file <- tempfile(fileext = ".xlsx")
