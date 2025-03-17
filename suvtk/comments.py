@@ -1,4 +1,3 @@
-# TODO: add checkv file option and read miuvig data from here
 import os
 
 import click
@@ -232,7 +231,9 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
     # Add merged parameters as new constant columns to the taxonomy DataFrame.
     if checkv:
         checkv_df = utils.safe_read_csv(checkv, sep="\t")
-        checkv_df = checkv_df[["contig_id", "miuvig_quality", "completeness"]]
+        checkv_df = checkv_df[
+            ["contig_id", "miuvig_quality", "completeness", "provirus"]
+        ]
         checkv_df.rename(
             columns={
                 "contig_id": "contig",
@@ -241,6 +242,14 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
             },
             inplace=True,
         )
+        checkv_df["detec_type"] = checkv_df["provirus"].map(
+            lambda x: (
+                "provirus (UpViG)" if x == "Yes" else "independent sequence (UViG)"
+            )
+        )
+        checkv_df = checkv_df[
+            ["contig_id", "miuvig_quality", "completeness", "detec_type"]
+        ]
         taxonomy_df = pd.merge(taxonomy_df, checkv_df, on="contig", how="left")
         merged_params.pop("assembly_qual")
         merged_params["compl_software"] = "CheckV"
@@ -249,6 +258,19 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
     else:
         for param, val in merged_params.items():
             taxonomy_df[param] = val
+
+    # If missing values in 'assembly_qual' and 'detec_type', fill with default values.
+    # Ensure the columns exist before filling missing values
+    default_values = {
+        "assembly_qual": "Genome fragment(s)",
+        "detec_type": "independent sequence (UViG)",
+    }
+
+    for col, default in default_values.items():
+        if col not in taxonomy_df:
+            taxonomy_df[col] = default
+        else:
+            taxonomy_df[col].fillna(default, inplace=True)
 
     # Reorder columns.
     desired_order = [
