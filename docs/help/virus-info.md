@@ -55,7 +55,7 @@ The `virus-info` subcommand identifies and reports details on potential segmente
 Below is an example command-line invocation:
 
 ```bash
-suvtk segment_info --taxonomy taxonomy.tsv --database /path/to/database --output output_dir
+suvtk virus-info --taxonomy taxonomy.tsv --database /path/to/database --output output_dir
 ```
 
 This command will process the `taxonomy.tsv` file, using the databases in `/path/to/database`, and write the results (e.g., `miuvig_taxonomy.tsv` and `segmented_viruses_info.tsv`) to the `output_dir`.
