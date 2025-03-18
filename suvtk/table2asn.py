@@ -3,10 +3,7 @@
 # TODO: add missing required miuvig params from src file? -> comments.py?:  env_broad_scale, env_local_scale, env_medium, investigation_type, project_name, seq_meth
 # TODO: add option to make genbank file -> made by default
 # TODO: add check for required columns (src, comments)
-import os
-
 import click
-import pandas as pd
 
 from suvtk import utils
 
@@ -15,25 +12,24 @@ def process_comments(src_file, comments_file):
     """
     Processes comments by updating the comments file based on the source file.
 
-    This function reads a source file and a comments file into pandas DataFrames,
-    ensures that the extra columns (collection_date, geo_loc_name, lat_lon) are inserted
-    right after the first column 'StructeredCommentPrefix' in the comments file, and then
-    groups the source DataFrame by the "Isolate" column to update duplicate-related fields.
-
     For each group of isolates, it updates the comments file with:
-      - extra data: collection_date, geo_loc_name, and lat_lon (copied from Collection_date,
-        geo_loc_name, and Lat_Lon in the src file)
-      - if duplicates exist, it updates:
-            - the count of isolates,
-            - the majority predicted genome type (taken from the comments file), and
-            - sets the predicted genome structure to "segmented".
+    - Extra data: `collection_date`, `geo_loc_name`, and `lat_lon` (copied from `Collection_date`,
+      `geo_loc_name`, and `Lat_Lon` in the source file).
+    - If duplicates exist, it updates:
+        - The count of isolates.
+        - The majority predicted genome type (taken from the comments file).
+        - Sets the predicted genome structure to "segmented".
 
-    Args:
-        src_file (str): The file path to the source file in tab-separated format.
-        comments_file (str): The file path to the comments file in tab-separated format.
+    Parameters
+    ----------
+    src_file : str
+        The file path to the source file in tab-separated format.
+    comments_file : str
+        The file path to the comments file in tab-separated format.
 
-    Returns:
-        None
+    Returns
+    -------
+    None
     """
     click.echo("Reading source and comments files...")
     src_df = utils.safe_read_csv(src_file, sep="\t")

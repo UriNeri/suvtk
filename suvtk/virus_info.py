@@ -52,12 +52,16 @@ def run_segment_info(tax_df, database, output_path):
 
     Parameters
     ----------
-    taxonomy : pandas.DataFrame
-       Pandas DataFrame with taxonomy information.
+    tax_df : pandas.DataFrame
+        Pandas DataFrame with taxonomy information.
     database : str
         The suvtk database path (contains nodes.dmp, names.dmp, etc.).
     output_path : str
         The output directory where results will be saved.
+
+    Returns
+    -------
+    None
     """
 
     # Load segmented viruses and genome structure databases.

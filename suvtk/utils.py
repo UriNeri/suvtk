@@ -10,16 +10,25 @@ import pandas as pd
 def Exec(CmdLine, fLog=None, capture=False):
     """
     Execute a command line in a shell, logging it to a file if specified.
-    If capture is True, suppress printing output to the screen.
 
-    :param CmdLine: The command line to execute
-    :type CmdLine: str
-    :param fLog: A file object to log the command and results, or None
-    :type fLog: file object or None
-    :param capture: Whether to capture output instead of printing
-    :type capture: bool
-    :return: The output of the command if captured, else None
-    :rtype: str or None
+    Parameters
+    ----------
+    CmdLine : str
+        The command line to execute.
+    fLog : file object or None, optional
+        A file object to log the command and results, or None.
+    capture : bool, optional
+        Whether to capture output instead of printing.
+
+    Returns
+    -------
+    str or None
+        The output of the command if captured, else None.
+
+    Raises
+    ------
+    subprocess.CalledProcessError
+        If the command execution fails.
     """
 
     def log_or_print(message, is_error=False):
@@ -68,6 +77,23 @@ def safe_read_csv(path, **kwargs):
     """
     Reads a CSV file using ASCII encoding. If a UnicodeDecodeError occurs,
     raises a ClickException showing the offending character.
+
+    Parameters
+    ----------
+    path : str
+        Path to the CSV file.
+    **kwargs : dict
+        Additional arguments to pass to `pandas.read_csv`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The contents of the CSV file.
+
+    Raises
+    ------
+    click.ClickException
+        If the file contains non-ASCII characters.
     """
     try:
         return pd.read_csv(path, encoding="ascii", **kwargs)
@@ -86,6 +112,14 @@ def safe_read_csv(path, **kwargs):
 
 # Copied from https://github.com/EricDeveaud/genomad/blob/030ab6434654435ce75243347c97be6f40ea175b/genomad/cli.py#L250-L257
 def get_available_cpus():
+    """
+    Get the number of available CPUs for the current process.
+
+    Returns
+    -------
+    int
+        The number of available CPUs.
+    """
     try:
         # Try to get the number of cores available to this process
         CPUS = len(os.sched_getaffinity(0))

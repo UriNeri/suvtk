@@ -17,18 +17,27 @@ VALID_GENETIC_CODES = set(range(1, 7)) | set(range(9, 17)) | set(range(21, 32))
 
 
 def validate_translation_table(ctx, param, value):
-    """Validate that the given translation table is one of the valid genetic codes.
+    """
+    Validate that the given translation table is one of the valid genetic codes.
 
-    Args:
-        ctx: The Click context object. Unused.
-        param: The parameter object. Unused.
-        value: The given translation table.
+    Parameters
+    ----------
+    ctx : click.Context
+        The Click context object. Unused.
+    param : click.Parameter
+        The parameter object. Unused.
+    value : int
+        The given translation table.
 
-    Returns:
-        value: The given translation table if it is valid.
+    Returns
+    -------
+    int
+        The given translation table if it is valid.
 
-    Raises:
-        click.BadParameter: If the given translation table is not valid.
+    Raises
+    ------
+    click.BadParameter
+        If the given translation table is not valid.
     """
     if value not in VALID_GENETIC_CODES:
         raise click.BadParameter(
@@ -38,7 +47,21 @@ def validate_translation_table(ctx, param, value):
 
 
 def calculate_coding_capacity(genes, seq_length):
-    """Calculate the total coding capacity for a list of genes."""
+    """
+    Calculate the total coding capacity for a list of genes.
+
+    Parameters
+    ----------
+    genes : list
+        A list of gene objects.
+    seq_length : int
+        The length of the sequence.
+
+    Returns
+    -------
+    float
+        The total coding capacity.
+    """
     return sum((gene.end - gene.begin) / seq_length for gene in genes)
 
 
@@ -47,11 +70,15 @@ def find_orientation(genes):
     Calculate the sum of the strand orientations for a list of genes.
     If the sum is zero, return the orientation of the largest gene.
 
-    Parameters:
-    genes (list): A list of gene objects, each having 'strand', 'begin', and 'end' attributes.
+    Parameters
+    ----------
+    genes : list
+        A list of gene objects, each having 'strand', 'begin', and 'end' attributes.
 
-    Returns:
-    int: The sum of strand orientations across all genes, or the orientation of the largest gene if the sum is zero.
+    Returns
+    -------
+    int
+        The sum of strand orientations across all genes, or the orientation of the largest gene if the sum is zero.
     """
     orientation_sum = sum(gene.strand for gene in genes)
 
@@ -64,7 +91,23 @@ def find_orientation(genes):
 
 
 def extract_gene_results(genes, record_id, seq_length):
-    """Extract gene prediction results for a sequence."""
+    """
+    Extract gene prediction results for a sequence.
+
+    Parameters
+    ----------
+    genes : list
+        A list of gene objects.
+    record_id : str
+        The ID of the sequence record.
+    seq_length : int
+        The length of the sequence.
+
+    Returns
+    -------
+    list
+        A list of gene prediction results.
+    """
     return [
         [
             record_id,
@@ -82,7 +125,25 @@ def extract_gene_results(genes, record_id, seq_length):
 
 
 def write_proteins(genes, record_id, dst_path, overwrite):
-    """Write protein translations to a file."""
+    """
+    Write protein translations to a file.
+
+    Parameters
+    ----------
+    genes : list
+        A list of gene objects.
+    record_id : str
+        The ID of the sequence record.
+    dst_path : str
+        The destination file path.
+    overwrite : bool
+        Whether to overwrite the file.
+
+    Returns
+    -------
+    bool
+        Updated overwrite flag.
+    """
     with open(dst_path, "w" if overwrite else "a") as dst:
         genes.write_translations(
             dst,
@@ -95,7 +156,23 @@ def write_proteins(genes, record_id, dst_path, overwrite):
 
 
 def write_nucleotides(sequence, output_handle, overwrite):
-    """Write nucleotide sequences to a file."""
+    """
+    Write nucleotide sequences to a file.
+
+    Parameters
+    ----------
+    sequence : Bio.SeqRecord.SeqRecord
+        The sequence record to write.
+    output_handle : str
+        The output file path.
+    overwrite : bool
+        Whether to overwrite the file.
+
+    Returns
+    -------
+    bool
+        Updated overwrite flag.
+    """
     with open(output_handle, "w" if overwrite else "a") as dst:
         write(sequence, dst, "fasta")
     return False
@@ -108,7 +185,7 @@ def select_top_structure(df):
     Parameters
     ----------
     df : pandas.DataFrame
-        A DataFrame with columns 'query', 'bits'.
+        A DataFrame with columns 'query' and 'bits'.
 
     Returns
     -------
@@ -122,7 +199,21 @@ def select_top_structure(df):
 
 
 def predict_orfs(orf_finder, seq):
-    """Find genes, compute coding capacity, and determine orientation."""
+    """
+    Find genes, compute coding capacity, and determine orientation.
+
+    Parameters
+    ----------
+    orf_finder : pyrodigal_gv.ViralGeneFinder
+        The ORF finder object.
+    seq : Bio.Seq.Seq
+        The sequence to analyze.
+
+    Returns
+    -------
+    tuple
+        A tuple containing genes, coding capacity, orientation, and the ORF finder used.
+    """
     genes = orf_finder.find_genes(bytes(seq))
     coding_capacity = calculate_coding_capacity(genes, len(seq))
     orientation = find_orientation(genes)
@@ -130,7 +221,23 @@ def predict_orfs(orf_finder, seq):
 
 
 def get_lineage(record_id, taxonomy_data, taxdb):
-    """Retrieve the lineage of a given record from the taxonomy table."""
+    """
+    Retrieve the lineage of a given record from the taxonomy table.
+
+    Parameters
+    ----------
+    record_id : str
+        The ID of the sequence record.
+    taxonomy_data : pandas.DataFrame
+        The taxonomy data table.
+    taxdb : taxopy.TaxDb
+        The taxonomy database.
+
+    Returns
+    -------
+    list
+        The lineage of the record.
+    """
     record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
     if record_taxonomy.empty:
         return []
@@ -157,12 +264,20 @@ def save_ncbi_feature_tables(df, output_dir=".", single_file=True):
     This function creates a single feature table file by default, but can
     also save separate files for each unique sequence ID when specified.
 
-    Parameters:
-    df (pd.DataFrame): DataFrame containing sequence data with columns
-                       ['seqid', 'accession', 'start', 'end', 'strand', 'type',
-                        'Protein names', 'source', 'start_codon', 'partial_begin', 'partial_end'].
-    output_dir (str): Directory path to save the feature tables. Defaults to ".".
-    single_file (bool): If True, saves all features to one file; otherwise, saves separate files.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing sequence data with columns
+        ['seqid', 'accession', 'start', 'end', 'strand', 'type',
+        'Protein names', 'source', 'start_codon', 'partial_begin', 'partial_end'].
+    output_dir : str, optional
+        Directory path to save the feature tables. Defaults to ".".
+    single_file : bool, optional
+        If True, saves all features to one file; otherwise, saves separate files.
+
+    Returns
+    -------
+    None
     """
 
     if single_file:
@@ -186,7 +301,20 @@ def save_ncbi_feature_tables(df, output_dir=".", single_file=True):
 
 
 def write_feature_entries(file, group):
-    """Helper function to write feature entries to a file."""
+    """
+    Helper function to write feature entries to a file.
+
+    Parameters
+    ----------
+    file : file-like object
+        The file to write to.
+    group : pandas.DataFrame
+        The group of feature entries to write.
+
+    Returns
+    -------
+    None
+    """
     for _, row in group.iterrows():
         start, end = row["start"], row["end"]
 
@@ -406,7 +534,7 @@ def features(
     # Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
     # Cmd += f"--query {output_path}/proteins.faa "
     # Cmd += f"--out {output_path}/alignment.m8 "
-    # Cmd += f"--threads {threads} "
+    # Cmd += "--threads {threads} "
     # Cmd += "--sensitive "
     # Cmd += "--index-chunks 1 "
     # Cmd += "--block-size 8 "

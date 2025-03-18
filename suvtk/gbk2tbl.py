@@ -1,5 +1,5 @@
 # adapted from https://github.com/wanyuac/BINF_toolkit/blob/master/gbk2tbl.py
-
+# TODO: generally improve script
 """
 This script converts a GenBank file (.gbk or .gb) into a Sequin feature table (.tbl), which is an input file of table2asn used for creating an ASN.1 file (.sqn).
 

@@ -133,6 +133,9 @@ allowed_values = {
     help="Output filename.",
 )
 def comments(taxonomy, features, miuvig, assembly, checkv, output):
+    """
+    Generate a structured comment file based on MIUVIG standards.
+    """
     # Read the taxonomy file.
     taxonomy_df = utils.safe_read_csv(taxonomy, sep="\t")
 
