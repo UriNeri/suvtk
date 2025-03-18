@@ -240,7 +240,7 @@ def write_feature_entries(file, group):
     "database",
     required=True,
     type=click.Path(exists=True),
-    help="BFVD diamond database path",
+    help="Path to the suvtk database folder.",
 )
 @click.option(
     "-g",
@@ -263,7 +263,7 @@ def write_feature_entries(file, group):
     "--taxonomy",
     required=False,
     type=click.Path(exists=True),
-    help="Taxonomy file to adjust sequence orientation if it belongs to a ssRNA(-) virus.",
+    help="Taxonomy file to adjust sequence orientation (ssRNA- sequences will get 3' -> 5' orientation, all others 5' -> 3').",
 )
 @click.option(
     "--separate-files",

@@ -33,7 +33,7 @@ from suvtk import utils, virus_info
     "database",
     required=True,
     type=click.Path(exists=True),
-    help="ICTV MMseqs database path",
+    help="Path to the suvtk database folder.",
 )
 @click.option(
     "-s",
