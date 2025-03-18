@@ -49,7 +49,7 @@ from suvtk import utils, virus_info
     "--threads",
     "threads",
     required=False,
-    default=4,
+    default=utils.get_available_cpus(),
     type=int,
     help="Number of threads to use",
 )

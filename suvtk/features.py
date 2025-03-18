@@ -276,7 +276,7 @@ def write_feature_entries(file, group):
     "--threads",
     "threads",
     required=False,
-    default=4,
+    default=utils.get_available_cpus(),
     type=int,
     metavar="",
     help="Number of threads to use",
@@ -520,7 +520,9 @@ def features(
         file.write(
             f"feat_pred\t{feat_pred};{feat_pred_version};-g {transl_table}, default otherwise\n"
         )
-        file.write(f"ref_db\tBFVD;2023_02;https://bfvd.steineggerlab.workers.dev\n")
+        file.write(
+            f"ref_db\tBFVD;2023_02;https://bfvd.steineggerlab.workers.dev\n"
+        )  # TODO: read DB version from version.txt or something
         file.write(
             f"sim_search_meth\t{aligner};{aligner_version};-s 7.5, default otherwise\n"
         )
