@@ -1,3 +1,29 @@
+"""
+co_occurrence.py
+================
+
+This script identifies co-occurring sequences in an abundance table based on
+prevalence and correlation thresholds. It supports optional segment-specific
+analysis and contig length correction.
+
+Functions
+---------
+calculate_proportion(df)
+    Calculate the proportion of samples for each contig.
+
+create_correlation_matrix(df_transposed)
+    Generate a Spearman correlation matrix and mask the upper triangle.
+
+segment_correlation_matrix(df, segment_list)
+    Calculate correlations for specific segments with all rows in the DataFrame.
+
+create_segment_list(segment_file)
+    Read a file containing segment identifiers and return them as a list.
+
+co_occurrence(input, output, segments, lengths, prevalence, correlation, strict)
+    Main command to identify co-occurring sequences in an abundance table.
+"""
+
 import sys
 from pathlib import Path
 

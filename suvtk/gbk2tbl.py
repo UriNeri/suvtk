@@ -5,36 +5,45 @@ This script converts a GenBank file (.gbk or .gb) into a Sequin feature table (.
 
 Package requirement: BioPython and click
 
-Usage:
-        Simple command:
-                python gbk2tbl.py --mincontigsize 200 --prefix any_prefix < annotation.gbk
-                cat annotation.gbk | python gbk2tbl.py --mincontigsize 200 --prefix any_prefix # integrate gbk2tbl into a pipeline
-        Redirecting error messages to a text file (optional):
-                python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt < annotation.gbk 2> stderr.txt
-                cat annotation.gbk | python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --modifiers modifier_file.txt 2> stderr.txt
-        Note that this script reads the GenBank file through the stdin ("< annotation.gbk") and you may want to redirect the stderr to a file via "> stderr.txt" (redirection).
+Examples
+--------
+Simple command:
+    python gbk2tbl.py --mincontigsize 200 --prefix any_prefix --input annotation.gbk
 
-Inputs:
-        A GenBank file, which ought to be passed to the script through the standard input (stdin).
 
-Outputs:
-        any_prefix.tbl: the Sequin feature table
-        any_prefix.fsa: the corresponding fasta file
-        These files are inputs for tbl2asn which generates ASN.1 files (*.sqn).
+Inputs
+------
+GenBank file
+    Passed to the script through input.
 
-Arguments:
-        --mincontigsize: the minimum contig size, default = 0
-        --prefix: the prefix of output filenames, default = 'seq'
-Development notes:
-        This script is derived from the one developed by SEQanswers users nickloman (https://gist.github.com/nickloman/2660685/genbank_to_tbl.py) and ErinL who modified nickloman's script and put it
-        on the forum post (http://seqanswers.com/forums/showthread.php?t=19975).
+Outputs
+-------
+any_prefix.tbl : str
+    The Sequin feature table.
+any_prefix.fsa : str
+    The corresponding FASTA file.
 
-Author of this version: Yu Wan (wanyuac@gmail.com, github.com/wanyuac)
-Creation: 20 June 2015 - 11 July 2015; the latest edition: 21 October 2019
+Arguments
+---------
+\-\-mincontigsize : int, optional
+    The minimum contig size, default = 0.
+\-\-prefix : str, optional
+    The prefix of output filenames, default = 'seq'.
 
-Dependency: Python versions 2 and 3 compatible.
+Notes
+-----
+    These files are inputs for table2asn which generates ASN.1 files (*.sqn).
 
-Licence: GNU GPL 2.1
+Development notes
+-----------------
+    This script is derived from the one developed by SEQanswers users nickloman (https://gist.github.com/nickloman/2660685/genbank_to_tbl.py) and ErinL who modified nickloman's script and put it on the forum post (http://seqanswers.com/forums/showthread.php?t=19975).
+
+    Author of this version: Yu Wan (wanyuac@gmail.com, github.com/wanyuac)
+    Creation: 20 June 2015 - 11 July 2015; the latest edition: 21 October 2019
+
+    Dependency: Python versions 2 and 3 compatible.
+
+    Licence: GNU GPL 2.1
 """
 
 from __future__ import print_function

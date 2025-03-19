@@ -1,3 +1,16 @@
+"""
+taxonomy.py
+===========
+
+This script assigns taxonomy to sequences using MMseqs2 from the ICTV nr database.
+It generates taxonomy files and integrates with other modules for further processing.
+
+Functions
+---------
+taxonomy(fasta_file, database, output_path, seqid, threads)
+    Main command to assign taxonomy to sequences.
+"""
+
 # TODO: save MIUVIG file with pred_genome_type and pred_genome_struc
 # TODO: Change to genomad taxonomy
 # TODO: mmseqs overwrite tmp file (mmseqs fails when command was previously aborted)

@@ -1,3 +1,29 @@
+"""
+features.py
+===========
+
+This script processes input sequences to predict open reading frames (ORFs),
+aligns the predicted protein sequences against a database, and generates feature
+tables for submission to GenBank.
+
+Functions
+---------
+validate_translation_table(ctx, param, value)
+    Validate the given translation table.
+
+calculate_coding_capacity(genes, seq_length)
+    Calculate the total coding capacity for a list of genes.
+
+find_orientation(genes)
+    Determine the orientation of genes based on strand information.
+
+predict_orfs(orf_finder, seq)
+    Predict ORFs, compute coding capacity, and determine orientation.
+
+features(fasta_file, output_path, database, transl_table, coding_complete, taxonomy, separate_files, threads)
+    Main command to create feature tables for sequences.
+"""
+
 # TODO: add count for sequences without ORF prediction
 # TODO: mmseqs log to file for clarity
 import os

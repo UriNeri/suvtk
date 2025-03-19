@@ -1,3 +1,25 @@
+"""
+virus_info.py
+=============
+
+This script provides information on potentially segmented viruses based on their taxonomy.
+It also outputs genome type and structure information for MIUVIG structured comments.
+
+Functions
+---------
+load_segment_db()
+    Load the segmented viruses database.
+
+load_genome_type_db()
+    Load the genome structure database.
+
+run_segment_info(tax_df, database, output_path)
+    Process taxonomy data to extract segmented virus and genome type information.
+
+virus_info(taxonomy, database, output_path)
+    Main command to analyze segmented viruses and generate genome type information.
+"""
+
 # TODO: Rename to genome_info?
 import importlib.resources
 import os

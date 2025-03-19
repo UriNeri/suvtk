@@ -1,3 +1,17 @@
+"""
+comments.py
+===========
+
+This script generates structured comment files based on MIUVIG standards.
+It validates input files, merges data from multiple sources, and ensures compliance
+with predefined standards for submission to GenBank.
+
+Functions
+---------
+comments(taxonomy, features, miuvig, assembly, checkv, output)
+    Generate a structured comment file based on MIUVIG standards.
+"""
+
 import os
 
 import click

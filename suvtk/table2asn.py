@@ -1,3 +1,19 @@
+"""
+table2asn.py
+============
+
+This script generates a .sqn submission file for GenBank. It processes source
+and comments files, validates data, and prepares the submission package.
+
+Functions
+---------
+process_comments(src_file, comments_file)
+    Update the comments file based on the source file.
+
+table2asn(input, output, src_file, features, template, comments)
+    Main command to generate a .sqn file for GenBank submission.
+"""
+
 # TODO: add date correction option
 # TODO: check/display stats file for errors (https://www.ncbi.nlm.nih.gov/genbank/validation/#BioSourceMissing) -> OKish
 # TODO: add missing required miuvig params from src file? -> comments.py?:  env_broad_scale, env_local_scale, env_medium, investigation_type, project_name, seq_meth

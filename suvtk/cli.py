@@ -1,3 +1,32 @@
+"""
+cli.py
+=======
+
+This script provides a command-line interface (CLI) for submitting viral sequences to GenBank.
+It includes various subcommands for processing and preparing data, such as taxonomy assignment,
+feature extraction, structured comment generation, and more.
+
+Classes
+-------
+FullHelpGroup
+    Custom Click Group to display commands in the order they were added.
+
+Functions
+---------
+cli()
+    Main entry point for the CLI tool.
+
+Commands
+--------
+- taxonomy
+- features
+- virus_info
+- co_occurrence
+- gbk2tbl
+- comments
+- table2asn
+"""
+
 from gettext import gettext as _
 
 import click

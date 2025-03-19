@@ -1,3 +1,23 @@
+"""
+utils.py
+========
+
+This script provides utility functions for executing shell commands, reading CSV files safely,
+and determining the number of available CPUs. These utilities are used across various modules
+in the project.
+
+Functions
+---------
+Exec(CmdLine, fLog=None, capture=False)
+    Execute a shell command and optionally log or capture the output.
+
+safe_read_csv(path, **kwargs)
+    Read a CSV file with ASCII encoding and handle UnicodeDecodeError.
+
+get_available_cpus()
+    Get the number of available CPUs for the current process.
+"""
+
 import os
 import subprocess
 import sys
