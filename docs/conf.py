@@ -27,7 +27,7 @@ extensions = [
     "sphinx.ext.viewcode",  # Add links to highlighted source code.
     "sphinx_autodoc_typehints",  # (Optional) Show type hints.
     "sphinx_copybutton",  # Add copy buttons to code blocks.
-    "sphinx_design",
+    "sphinx_design",  # Add design elements to the documentation.
     "myst_parser",  # Markdown support.
 ]
 
