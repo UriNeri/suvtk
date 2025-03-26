@@ -27,7 +27,6 @@ Commands
 - table2asn
 """
 
-import importlib.metadata
 from gettext import gettext as _
 
 import click
@@ -99,11 +98,9 @@ CONTEXT_SETTINGS = dict(
     help_option_names=["-h", "--help"], show_default=True, max_content_width=120
 )
 
-version = importlib.metadata.version("suvtk")
-
 
 @click.group(context_settings=CONTEXT_SETTINGS, cls=FullHelpGroup)
-@click.version_option(version, "-v", "--version", message="%(prog)s %(version)s")
+@click.version_option(None, "-v", "--version", message="%(prog)s %(version)s")
 def cli():
     """
     Tool to submit viral sequences to Genbank.
