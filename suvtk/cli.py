@@ -103,9 +103,7 @@ CONTEXT_SETTINGS = dict(
 @click.version_option(None, "-v", "--version", message="%(prog)s %(version)s")
 def cli():
     """
-    Tool to submit viral sequences to Genbank.
-
-    This CLI tool provides various commands to process and submit viral
+    The suvtk CLI tool provides various commands to process and submit viral
     sequences to Genbank, including taxonomy, features, virus information,
     and more.
     """
