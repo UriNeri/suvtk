@@ -46,7 +46,10 @@ html_theme = "furo"
 html_static_path = ["_static"]
 html_title = f"{project} {release}"
 html_theme_options = {
+    "sidebar_hide_name": True,
     "navigation_with_keys": True,
+    "light_logo": "logo_light.svg",
+    "dark_logo": "logo_dark.svg",
     "footer_icons": [
         {
             "name": "GitHub",
