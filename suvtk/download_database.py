@@ -1,6 +1,26 @@
 """
-A CLI tool with a `download-database` subcommand to download and extract a predetermined TAR archive
-from a fixed Zenodo DOI.
+download_database.py
+====================
+
+This script downloads and extracts the suvtk database as a gzipped tar file from Zenodo.
+
+Functions
+---------
+doi_to_record_id(doi: str) -> str
+    Extract the numeric record ID from a Zenodo DOI.
+
+fetch_record_metadata(record_id: str) -> dict
+    Fetch the Zenodo record metadata in JSON form.
+
+find_tar_file(files: list) -> dict
+    Locate the first `.tar` or `.tar.gz` file in the record's files list.
+
+download_file(url: str, dest: str, chunk_size: int = 1024 * 1024)
+    Stream-download a file from a URL to a local path.
+
+unpack_tar(archive: str, output_dir: str = None)
+    Extract a `.tar` or `.tar.gz` archive to a directory.
+
 """
 
 import os
@@ -68,18 +88,15 @@ def download_file(url: str, dest: str, chunk_size: int = 1024 * 1024):
 
 def unpack_tar(archive: str, output_dir: str = None):
     """
-    Extract a .tar or .tar.gz archive to a directory.
+    Extract a .tar or .tar.gz archive into the specified output_dir
+    (defaults to current directory), preserving all folder structure.
     """
-    if output_dir is None:
-        base = os.path.basename(archive)
-        for ext in (".tar.gz", ".tar"):
-            if base.endswith(ext):
-                base = base[: -len(ext)]
-                break
-        output_dir = base
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    else:
+        output_dir = os.getcwd()
 
-    click.echo(f"Extracting {archive} → {output_dir}/")
-    os.makedirs(output_dir, exist_ok=True)
+    click.echo(f"Extracting {archive} into {output_dir}")
     with tarfile.open(archive, "r:*") as tar:
         tar.extractall(path=output_dir)
     click.echo("Extraction complete.")
@@ -100,7 +117,15 @@ def download_database(output_dir):
     record_id = doi_to_record_id(ZENODO_DOI)
     metadata = fetch_record_metadata(record_id)
     tar_info = find_tar_file(metadata.get("files", []))
-    download_url = tar_info["links"]["download"]
+
+    # Zenodo file entries expose download links under 'links'.
+    links = tar_info.get("links", {})
+    download_url = links.get("download") or links.get("self")
+    if not download_url:
+        raise RuntimeError(
+            f"No downloadable link found for file '{tar_info.get('key')}'."
+        )
+
     filename = tar_info["key"]
 
     download_file(download_url, filename)
