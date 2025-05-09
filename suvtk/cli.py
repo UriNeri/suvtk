@@ -18,6 +18,7 @@ cli()
 
 Commands
 --------
+- download-database
 - taxonomy
 - features
 - virus_info
@@ -34,6 +35,7 @@ import click
 from suvtk import (
     co_occurrence,
     comments,
+    download_database,
     features,
     gbk2tbl,
     table2asn,
@@ -109,6 +111,7 @@ def cli():
     """
 
 
+cli.add_command(download_database)
 cli.add_command(taxonomy)
 cli.add_command(features)
 cli.add_command(virus_info)
