@@ -1,9 +1,13 @@
 name: "Sphinx: Render docs"
 
 on: 
-    push:
-        paths:
-            - 'docs/**'
+  push:
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Manually deploy documentation'
 
 jobs:
   build:
