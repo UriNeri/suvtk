@@ -4,6 +4,9 @@
 #Tests
 tests/test_data
 
+# VScode
+.vscode
+
 # Drawio
 *.bkp
 
