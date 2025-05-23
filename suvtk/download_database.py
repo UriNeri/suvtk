@@ -30,7 +30,7 @@ import click
 import requests
 
 # The Zenodo DOI is fixed
-ZENODO_DOI = "10.5281/zenodo.15423947"
+ZENODO_DOI = "10.5281/zenodo.15374439"
 
 
 def doi_to_record_id(doi: str) -> str:
