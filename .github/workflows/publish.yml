@@ -2,10 +2,14 @@ name: Publish Python Package
 
 on:
   push:
-    branches:
-      - main        
-    tags:
-      - 'v*'        # for the publish-to-pypi job below
+    # 1) Branch pushes to main, but only when suvtk/ changes
+    - branches:
+        - main
+      paths:
+        - 'suvtk/**'
+    # 2) Tag pushes matching v* (always run regardless of paths)
+    - tags:
+        - 'v*'
 
 jobs:
   build:
