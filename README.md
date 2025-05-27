@@ -1,8 +1,8 @@
 # suvtk (Submission of Uncultivated Viral genomes toolkit)
 
-[![Changelog](https://img.shields.io/github/v/release/LanderDC/suvtk?include_prereleases&label=changelog&color=purple)](https://github.com/LanderDC/suvtk/releases)
-[![PyPI](https://img.shields.io/pypi/v/suvtk.svg?color=purple)](https://pypi.org/project/suvtk/)
-[![Bioconda](https://img.shields.io/conda/v/bioconda/suvtk?label=bioconda&labelColor=grey&color=brightgreen)](https://bioconda.github.io/recipes/suvtk/README.html)
+[![Changelog](https://img.shields.io/github/v/release/LanderDC/suvtk?include_prereleases&label=release&color=purple&logo=github)](https://github.com/LanderDC/suvtk/releases)
+[![PyPI](https://img.shields.io/pypi/v/suvtk.svg?color=blue&logo=python)](https://pypi.org/project/suvtk/)
+[![Bioconda](https://img.shields.io/conda/v/bioconda/suvtk?label=bioconda&labelColor=grey&color=brightgreen&logo=anaconda)](https://bioconda.github.io/recipes/suvtk/README.html)
 [![Tests](https://github.com/LanderDC/suvtk/actions/workflows/test.yml/badge.svg)](https://github.com/LanderDC/suvtk/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/LanderDC/suvtk/blob/master/LICENSE)
 
