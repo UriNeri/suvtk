@@ -4,9 +4,13 @@ on:
   push:
     paths:
       - 'suvtk/**'
+      - 'tests/**'
+      - pyproject.toml
   pull_request:
     paths:
       - 'suvtk/**'
+      - 'tests/**'
+      - pyproject.toml
 
 permissions:
   contents: read
