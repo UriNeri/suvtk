@@ -170,13 +170,12 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -225,3 +224,4 @@ pyrightconfig.json
 
 # Neri's dumb stuff
 tmp/
+test_examples/database/
