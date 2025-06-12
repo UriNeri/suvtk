@@ -4,12 +4,10 @@ on:
   release:
     types: [published] # change to 'released' to exclude pre-releases
   push:
-    branches:
-      - main
+    tags:
+      - 'release-*'  # Only trigger on tags like release-v1.0.0, release-test, etc.
     paths:
       - 'suvtk/**'
-    tags-ignore:
-      - 'v*'
 
 jobs:
   build:

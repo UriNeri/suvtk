@@ -222,3 +222,6 @@ pyrightconfig.json
 
 # Excel files
 *.xlsx
+
+# Neri's dumb stuff
+tmp/
