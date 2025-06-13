@@ -29,9 +29,9 @@ features(fasta_file, output_path, database, transl_table, coding_complete, taxon
 import os
 import shutil
 
-import Bio.SeqIO
+import needletail
 import click
-import pandas as pd
+import polars as pl
 import pyrodigal_gv
 import taxopy
 from Bio.SeqIO import write
@@ -187,8 +187,8 @@ def write_nucleotides(sequence, output_handle, overwrite):
 
     Parameters
     ----------
-    sequence : Bio.SeqRecord.SeqRecord
-        The sequence record to write.
+    sequence : dict
+        The sequence record with 'id' and 'seq' keys.
     output_handle : str
         The output file path.
     overwrite : bool
@@ -200,7 +200,11 @@ def write_nucleotides(sequence, output_handle, overwrite):
         Updated overwrite flag.
     """
     with open(output_handle, "w" if overwrite else "a") as dst:
-        write(sequence, dst, "fasta")
+        dst.write(f">{sequence['id']}\n")
+        # Write sequence with line breaks every 80 characters
+        seq = sequence['seq']
+        for i in range(0, len(seq), 80):
+            dst.write(seq[i:i+80] + "\n")
     return False
 
 
@@ -210,17 +214,18 @@ def select_top_structure(df):
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    df : polars.DataFrame
         A DataFrame with columns 'query' and 'bits'.
 
     Returns
     -------
-    pandas.DataFrame
+    polars.DataFrame
         A DataFrame with the top structure for each query.
     """
-    highest_bits_idx = df.groupby("query")["bits"].idxmax()
-    # Select those rows
-    result = df.loc[highest_bits_idx]
+    # In polars, we use window functions to get the row with maximum bits per group
+    result = df.filter(
+        pl.col("bits") == pl.col("bits").max().over("query")
+    )
     return result
 
 
@@ -232,7 +237,7 @@ def predict_orfs(orf_finder, seq):
     ----------
     orf_finder : pyrodigal_gv.ViralGeneFinder
         The ORF finder object.
-    seq : Bio.Seq.Seq
+    seq : str
         The sequence to analyze.
 
     Returns
@@ -254,7 +259,7 @@ def get_lineage(record_id, taxonomy_data, taxdb):
     ----------
     record_id : str
         The ID of the sequence record.
-    taxonomy_data : pandas.DataFrame
+    taxonomy_data : polars.DataFrame
         The taxonomy data table.
     taxdb : taxopy.TaxDb
         The taxonomy database.
@@ -264,8 +269,8 @@ def get_lineage(record_id, taxonomy_data, taxdb):
     list
         The lineage of the record.
     """
-    record_taxonomy = taxonomy_data[taxonomy_data["contig"] == record_id]
-    if record_taxonomy.empty:
+    record_taxonomy = taxonomy_data.filter(pl.col("contig") == record_id)
+    if record_taxonomy.height == 0:
         return []
     # taxid_dict = record_taxonomy.set_index("contig")["taxid"].to_dict()
     tax = record_taxonomy["taxonomy"].item().removesuffix(" sp.")
@@ -292,7 +297,7 @@ def save_ncbi_feature_tables(df, output_dir=".", single_file=True):
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : polars.DataFrame
         DataFrame containing sequence data with columns
         ['seqid', 'accession', 'start', 'end', 'strand', 'type',
         'Protein names', 'source', 'start_codon', 'partial_begin', 'partial_end'].
@@ -309,16 +314,16 @@ def save_ncbi_feature_tables(df, output_dir=".", single_file=True):
     if single_file:
         filename = os.path.join(output_dir, "featuretable.tbl")
         with open(filename, "w") as file:
-            for seqid, group in df.groupby("seqid"):
-                accession = group["seqid"].iloc[0]
+            for seqid, group in df.group_by("seqid"):
+                accession = group["seqid"].item(0)
                 file.write(f">Feature {accession}\n")
                 write_feature_entries(file, group)
         click.echo(f"Saved: {filename}")
 
     else:
         os.makedirs(os.path.join(output_dir, "feature_tables"), exist_ok=True)
-        for seqid, group in df.groupby("seqid"):
-            accession = group["seqid"].iloc[0]
+        for seqid, group in df.group_by("seqid"):
+            accession = group["seqid"].item(0)
             filename = os.path.join(output_dir, "feature_tables", f"{accession}.tbl")
             with open(filename, "w") as file:
                 file.write(f">Feature {accession}\n")
@@ -334,14 +339,14 @@ def write_feature_entries(file, group):
     ----------
     file : file-like object
         The file to write to.
-    group : pandas.DataFrame
+    group : polars.DataFrame
         The group of feature entries to write.
 
     Returns
     -------
     None
     """
-    for _, row in group.iterrows():
+    for row in group.iter_rows(named=True):
         start, end = row["start"], row["end"]
 
         if row["partial_end"]:
@@ -357,7 +362,7 @@ def write_feature_entries(file, group):
 
         protein = (
             row["Protein names"]
-            if pd.notna(row["Protein names"])
+            if row["Protein names"] is not None
             else "hypothetical protein"
         )
         file.write(f"\t\t\tproduct\t{protein}\n")
@@ -460,12 +465,18 @@ def features(
 
     os.makedirs(output_path, exist_ok=True)
 
-    records = list(Bio.SeqIO.parse(fasta_file, "fasta"))
+    # Parse FASTA file with needletail
+    records = []
+    for record in needletail.parse_fastx_file(fasta_file):
+        records.append({
+            'id': record.id,
+            'seq': record.seq
+        })
 
     # Train ORF finder
     orf_finder = pyrodigal_gv.ViralGeneFinder()
     training_info = orf_finder.train(
-        *(bytes(seq.seq) for seq in records), translation_table=transl_table
+        *(bytes(seq['seq'], 'utf-8') for seq in records), translation_table=transl_table
     )
 
     # Initialize ORF finders
@@ -494,19 +505,19 @@ def features(
     overwrite, overwrite_n = True, True
 
     for record in records:
-        lineage = get_lineage(record.id, taxonomy_data, taxdb) if taxonomy else []
+        lineage = get_lineage(record['id'], taxonomy_data, taxdb) if taxonomy else []
 
         # Predict ORFs using orf_finder1 first
         genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
-            orf_finder1, record.seq
+            orf_finder1, record['seq']
         )
 
         # Commented out because it is not possible to use orf_finder2 yet
         # If coding capacity is too low, use orf_finder2 instead
         # if coding_capacity < 0.5 and not coding_complete:
-        #    # click.echo(f"Repredicting ORFs for {record.id} due to low coding capacity.")
+        #    # click.echo(f"Repredicting ORFs for {record['id']} due to low coding capacity.")
         #    genes, coding_capacity, orientation, chosen_orf_finder = predict_orfs(
-        #        orf_finder2, record.seq
+        #        orf_finder2, record['seq']
         #    )
 
         if coding_capacity >= 0.5:
@@ -514,16 +525,17 @@ def features(
             if (orientation < 0 and "Negarnaviricota" not in lineage) or (
                 orientation > 0 and "Negarnaviricota" in lineage
             ):
-                record.seq = record.seq.reverse_complement()
+                # Reverse complement the sequence
+                record['seq'] = needletail.reverse_complement(record['seq'])
                 genes, _, _, _ = predict_orfs(
-                    chosen_orf_finder, record.seq
+                    chosen_orf_finder, record['seq']
                 )  # Use the last used ORF finder
 
-            results.extend(extract_gene_results(genes, record.id, len(record.seq)))
-            overwrite = write_proteins(genes, record.id, prot_path, overwrite)
+            results.extend(extract_gene_results(genes, record['id'], len(record['seq'])))
+            overwrite = write_proteins(genes, record['id'], prot_path, overwrite)
             overwrite_n = write_nucleotides(record, nucl_path, overwrite_n)
         else:
-            no_orf_pred.append(record.id)
+            no_orf_pred.append(record['id'])
             # click.echo(
             #    f"No ORF predictions with start site and >50% coding capacity for {record.id}."
             # )
@@ -544,17 +556,17 @@ def features(
         "partial_begin",
         "partial_end",
     ]
-    df = pd.DataFrame(results, columns=columns)
+    df = pl.DataFrame(results, schema=columns)
 
     feat_pred = f"pyrodigal-gv"
     feat_pred_version = f"{pyrodigal_gv.__version__}"
 
-    df["seqid"] = df["seqid"].str.strip()
-    df["type"] = "CDS"
-    df["source"] = f"{feat_pred}:{feat_pred_version}"
-    # df["source"] = f"pyrodigal-gv"
-    # df["annotation_source"]=f"BFVD (https://doi.org/10.1093/nar/gkae1119)"
-    df["annotation_source"] = "UniProtKB"
+    df = df.with_columns([
+        pl.col("seqid").str.strip_chars(),
+        pl.lit("CDS").alias("type"),
+        pl.lit(f"{feat_pred}:{feat_pred_version}").alias("source"),
+        pl.lit("UniProtKB").alias("annotation_source")
+    ])
 
     # Cmd = "diamond blastp "
     # Cmd += f"--db {database}/foldseek_db/bfvd.dmnd "
@@ -593,75 +605,81 @@ def features(
 
     m8 = utils.safe_read_csv(
         m8_path,
-        sep="\t",
-        header=None,
+        separator="\t",
+        has_header=False,
     )
-    m8.rename(
-        {
-            0: "query",
-            1: "target",
-            2: "pident",
-            3: "len",
-            4: "mismatch",
-            5: "gapopen",
-            6: "qstart",
-            7: "qend",
-            8: "tstart",
-            9: "tend",
-            10: "evalue",
-            11: "bits",
-        },
-        axis=1,
-        inplace=True,
-    )
+    
+    # Rename columns in polars
+    column_mapping = {
+        "column_1": "query",
+        "column_2": "target", 
+        "column_3": "pident",
+        "column_4": "len",
+        "column_5": "mismatch",
+        "column_6": "gapopen",
+        "column_7": "qstart",
+        "column_8": "qend",
+        "column_9": "tstart", 
+        "column_10": "tend",
+        "column_11": "evalue",
+        "column_12": "bits",
+    }
+    m8 = m8.rename(column_mapping)
 
-    m8 = m8[m8["evalue"] < 1e-3]
+    m8 = m8.filter(pl.col("evalue") < 1e-3)
 
-    m8["aligner"] = aligner
-    m8["aligner_version"] = aligner_version
+    m8 = m8.with_columns([
+        pl.lit(aligner).alias("aligner"),
+        pl.lit(aligner_version).alias("aligner_version")
+    ])
 
     m8_top = select_top_structure(m8)
     names_df = utils.safe_read_csv(
-        os.path.join(database, "bfvd_uniprot_names.tsv"), sep="\t"
+        os.path.join(database, "bfvd_uniprot_names.tsv"), separator="\t"
     )  # TODO find better solution?
 
     # remove all trailing strings within brackets from protein names
-    names_df["Protein names"] = names_df["Protein names"].str.replace(
-        r"[\(\[].*?[\)\]]$", "", regex=True
+    names_df = names_df.with_columns(
+        pl.col("Protein names").str.replace_all(r"[\(\[].*?[\)\]]$", "")
     )
 
     meta_df = utils.safe_read_csv(
-        os.path.join(database, "bfvd_metadata.tsv"), sep="\t", header=None
+        os.path.join(database, "bfvd_metadata.tsv"), separator="\t", has_header=False
     )  # TODO find better solution?
-    meta_df.rename(
-        {
-            0: "Uniref_entry",
-            1: "model",
-            2: "length",
-            3: "avg_pLDDT",
-            4: "pTM",
-            5: "splitted",
-        },
-        axis=1,
-        inplace=True,
+    
+    # Rename columns in polars
+    meta_column_mapping = {
+        "column_1": "Uniref_entry",
+        "column_2": "model",
+        "column_3": "length",
+        "column_4": "avg_pLDDT",
+        "column_5": "pTM",
+        "column_6": "splitted",
+    }
+    meta_df = meta_df.rename(meta_column_mapping)
+
+    meta_df = meta_df.with_columns(
+        pl.col("model").str.replace(".pdb", "")
     )
 
-    meta_df["model"] = meta_df["model"].str.replace(".pdb", "")
-
-    merged_df = pd.merge(
-        meta_df, names_df, left_on="Uniref_entry", right_on="From", how="left"
+    merged_df = meta_df.join(
+        names_df, left_on="Uniref_entry", right_on="From", how="left"
     )
 
-    prot_df = pd.merge(
-        m8_top, merged_df, left_on="target", right_on="model", how="left"
+    prot_df = m8_top.join(
+        merged_df, left_on="target", right_on="model", how="left"
     )
 
     # prot_df["Protein names"]
 
-    prot_df.to_csv(os.path.join(output_path, "tophit_info.tsv"), sep="\t", index=False)
+    prot_df.write_csv(
+        os.path.join(output_path, "tophit_info.tsv"),
+        separator="\t",
+        include_header=True
+    )
 
     diamond = prot_df
-    final_df = pd.merge(df, diamond, left_on="orf", right_on="query", how="left")
+    final_df = df.join(diamond, left_on="orf", right_on="query", how="left")
 
     single_file = False if separate_files else True
     # Call the function to save feature tables

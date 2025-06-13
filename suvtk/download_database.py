@@ -47,6 +47,7 @@ def fetch_record_metadata(record_id: str) -> dict:
     """
     Fetch the Zenodo record metadata in JSON form.
     """
+    # record_id = 15650136 # just to test the functions with a smaller record
     api_url = f"https://zenodo.org/api/records/{record_id}"
     response = requests.get(api_url)
     response.raise_for_status()
@@ -57,6 +58,7 @@ def find_tar_file(files: list) -> dict:
     """
     From the record's files list, locate the first .tar or .tar.gz.
     """
+    # TODO: If the archive in zenodo is in .zip format, it's content will be listed in the web view. Just a nice thing to have, if the compression ratio isn't detrimental.
     for f in files:
         key = f.get("key", "")
         if key.endswith((".tar", ".tar.gz")):
@@ -128,7 +130,10 @@ def download_database(output_dir):
 
     filename = tar_info["key"]
 
-    download_file(download_url, filename)
+    download_file(url=download_url, dest=filename) # this is dog slow
+    # uv run suvtk download-database -o test_examples/database  11.38s user 8.43s system 4% cpu 7:20.88 total (failed to unpack, so this is just the download time)
+    # uv run suvtk download-database -o test_examples/database  102.77s user 18.00s system 16% cpu 12:04.53 total (with unpack)
+    # Also why not download directly into the output dir, instead of to the current (or called from) path?
     unpack_tar(filename, output_dir)
 
 

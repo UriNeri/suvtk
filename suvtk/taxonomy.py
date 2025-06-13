@@ -13,12 +13,14 @@ taxonomy(fasta_file, database, output_path, seqid, threads)
 
 # TODO: save MIUVIG file with pred_genome_type and pred_genome_struc
 # TODO: Change to genomad taxonomy
-# TODO: mmseqs overwrite tmp file (mmseqs fails when command was previously aborted)
+# TODO: mmseqs overwrite tmp file (mmseqs fails when command was previously aborted) ||| why not use --remove-tmp-files ? shouldn't unless you intend to try and reuse the tmp stuff from a failed run (--force-reuse)
+# TODO: add memory size check and then manually set the  --split INT and --split-memory-limit BYTE so that at leas 200mb of the system availalbe memory are not used.
+
 import os
 import shutil
 
 import click
-import pandas as pd
+import polars as pl
 
 from suvtk import utils, virus_info
 
@@ -96,51 +98,46 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
 
     shutil.rmtree("tmp")
 
-    taxonomy = utils.safe_read_csv(f"{taxresult_path}_lca.tsv", sep="\t", header=None)
-    taxonomy.rename(
-        {
-            0: "query",
-            1: "taxid",
-            2: "rank",
-            3: "name",
-            4: "fragments",
-            5: "assigned",
-            6: "agreement",
-            7: "support",
-            8: "lineage",
-        },
-        axis=1,
-        inplace=True,
+    taxonomy = utils.safe_read_csv(f"{taxresult_path}_lca.tsv", separator="\t", has_header=False)
+    taxonomy_columns = {
+        "column_1": "query",
+        "column_2": "taxid",
+        "column_3": "rank",
+        "column_4": "name",
+        "column_5": "fragments",
+        "column_6": "assigned",
+        "column_7": "agreement",
+        "column_8": "support",
+        "column_9": "lineage",
+    }
+    taxonomy = taxonomy.rename(taxonomy_columns)
+
+    tophit = utils.safe_read_csv(f"{taxresult_path}_tophit_aln", separator="\t", has_header=False)
+    tophit_columns = {
+        "column_1": "query",
+        "column_2": "target",
+        "column_3": "pident",
+        "column_4": "len",
+        "column_5": "mismatch",
+        "column_6": "gapopen",
+        "column_7": "qstart",
+        "column_8": "qend",
+        "column_9": "tstart",
+        "column_10": "tend",
+        "column_11": "evalue",
+        "column_12": "bits",
+    }
+    tophit = tophit.rename(tophit_columns)
+
+    # Select top hits using polars window function
+    top_tophit = tophit.filter(
+        pl.col("bits") == pl.col("bits").max().over("query")
     )
 
-    tophit = utils.safe_read_csv(f"{taxresult_path}_tophit_aln", sep="\t", header=None)
-    tophit.rename(
-        {
-            0: "query",
-            1: "target",
-            2: "pident",
-            3: "len",
-            4: "mismatch",
-            5: "gapopen",
-            6: "qstart",
-            7: "qend",
-            8: "tstart",
-            9: "tend",
-            10: "evalue",
-            11: "bits",
-        },
-        axis=1,
-        inplace=True,
-    )
-
-    # Select top hits
-    highest_bits_idx = tophit.groupby("query")["bits"].idxmax()
-    top_tophit = tophit.loc[highest_bits_idx]
-
-    merged = pd.merge(taxonomy, top_tophit, on="query", how="left")
+    merged = taxonomy.join(top_tophit, on="query", how="left")
 
     tax_names = []
-    for index, row in merged.iterrows():
+    for row in merged.iter_rows(named=True):
         if row["rank"] == "no rank":
             click.echo(f"No taxonomy for {row['query']}")
             last_known = "unclassified viruses"
@@ -162,8 +159,8 @@ def taxonomy(fasta_file, database, output_path, seqid, threads):
             ]
         )
 
-    tax_df = pd.DataFrame(tax_names, columns=["contig", "taxonomy"])
-    tax_df.to_csv(os.path.join(output_path, "taxonomy.tsv"), sep="\t", index=False)
+    tax_df = pl.DataFrame(tax_names, columns=["contig", "taxonomy"])
+    tax_df.write_csv(os.path.join(output_path, "taxonomy.tsv"), separator="\t")
 
     virus_info.run_segment_info(tax_df, database, output_path)
 

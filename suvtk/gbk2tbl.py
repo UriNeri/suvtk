@@ -113,6 +113,7 @@ def gbk2tbl(input, mincontigsize, prefix):
     records = list(
         SeqIO.parse(input, "genbank")
     )  # read a GenBank file from the standard input and convert it into a list of SeqRecord objects
+    # TODO: figure out a way to read gbk without darn biopython
 
     for rec in records:  # for every SeqRecord object in the list 'records'
         if len(rec) <= mincontigsize:  # filter out small contigs

@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 
 import click
-import pandas as pd
+import polars as pl
 import taxopy
 
 from suvtk import utils
@@ -38,7 +38,7 @@ def load_segment_db():
 
     Returns
     -------
-    pandas.DataFrame
+    polars.DataFrame
         Data frame with the segmented viruses database.
     """
     with (
@@ -46,7 +46,7 @@ def load_segment_db():
         .joinpath("segmented_viruses.tsv")
         .open("r") as file
     ):
-        db = utils.safe_read_csv(file, sep="\t", header=0)
+        db = utils.safe_read_csv(file, separator="\t", has_header=True)
         return db
 
 
@@ -56,7 +56,7 @@ def load_genome_type_db():
 
     Returns
     -------
-    pandas.DataFrame
+    polars.DataFrame
         Data frame with the genome structure database.
     """
     with (
@@ -64,7 +64,7 @@ def load_genome_type_db():
         .joinpath("genome_types.tsv")
         .open("r") as file
     ):
-        db = utils.safe_read_csv(file, sep="\t", header=0)
+        db = utils.safe_read_csv(file, separator="\t", has_header=True)
         return db
 
 
@@ -74,8 +74,8 @@ def run_segment_info(tax_df, database, output_path):
 
     Parameters
     ----------
-    tax_df : pandas.DataFrame
-        Pandas DataFrame with taxonomy information.
+    tax_df : polars.DataFrame
+        Polars DataFrame with taxonomy information.
     database : str
         The suvtk database path (contains nodes.dmp, names.dmp, etc.).
     output_path : str
@@ -100,7 +100,7 @@ def run_segment_info(tax_df, database, output_path):
     gt_results = []  # For genome type records from genome_type_db
     segmented = False  # Flag to trigger extra messages
 
-    for index, row in tax_df.iterrows():
+    for row in tax_df.iter_rows(named=True):
         if row["taxonomy"] == "unclassified viruses":
             gt_results.append(
                 {
@@ -135,9 +135,9 @@ def run_segment_info(tax_df, database, output_path):
 
         # Loop once over the lineage to get both records.
         for taxa in lineage:
-            if segment_record is None and taxa in segment_db["taxon"].values:
+            if segment_record is None and taxa in segment_db["taxon"].to_list():
                 segment_record = (
-                    segment_db.loc[segment_db["taxon"] == taxa].iloc[0].to_dict()
+                    segment_db.filter(pl.col("taxon") == taxa).row(0, named=True)
                 )
                 record = {"contig": row["contig"], **segment_record}
                 results.append(record)
@@ -158,11 +158,9 @@ def run_segment_info(tax_df, database, output_path):
                             f"The segmented viruses of {segment_record['taxon']} have "
                             f"{segment_record['majority_segment']} segments."
                         )
-            if genome_type_record is None and taxa in genome_type_db["taxon"].values:
+            if genome_type_record is None and taxa in genome_type_db["taxon"].to_list():
                 genome_type_record = (
-                    genome_type_db.loc[genome_type_db["taxon"] == taxa]
-                    .iloc[0]
-                    .to_dict()
+                    genome_type_db.filter(pl.col("taxon") == taxa).row(0, named=True)
                 )
 
             if segment_record is not None and genome_type_record is not None:
@@ -196,23 +194,22 @@ def run_segment_info(tax_df, database, output_path):
                 }
             )
 
-    genome_type_df = pd.DataFrame(gt_results)[
-        ["contig", "pred_genome_type", "pred_genome_struc"]
-    ]
-    genome_type_df.to_csv(
-        os.path.join(output_path, "miuvig_taxonomy.tsv"), sep="\t", index=False
+    genome_type_df = pl.DataFrame(gt_results).select([
+        "contig", "pred_genome_type", "pred_genome_struc"
+    ])
+    genome_type_df.write_csv(
+        os.path.join(output_path, "miuvig_taxonomy.tsv"), separator="\t"
     )
 
     if segmented:
         click.echo("\nYou might want to check your data for missing segments.")
     if results:
-        segmented_df = pd.DataFrame(results).sort_values(
-            by="segmented_fraction", ascending=False
+        segmented_df = pl.DataFrame(results).sort(
+            "segmented_fraction", descending=True
         )
-        segmented_df.to_csv(
+        segmented_df.write_csv(
             os.path.join(output_path, "segmented_viruses_info.tsv"),
-            sep="\t",
-            index=False,
+            separator="\t",
         )
         click.echo(
             "\nContig information on segmented viruses written to 'segmented_viruses_info.tsv'."
@@ -254,7 +251,7 @@ def virus_info(taxonomy, database, output_path):
         )
     os.makedirs(output_path, exist_ok=True)
 
-    tax_df = utils.safe_read_csv(taxonomy, sep="\t")
+    tax_df = utils.safe_read_csv(taxonomy, separator="\t")
     run_segment_info(tax_df, database, output_path)
 
 

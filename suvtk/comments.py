@@ -15,7 +15,7 @@ comments(taxonomy, features, miuvig, assembly, checkv, output)
 import os
 
 import click
-import pandas as pd
+import polars as pl
 
 from suvtk import utils
 
@@ -151,47 +151,48 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
     Generate a structured comment file based on MIUVIG standards.
     """
     # Read the taxonomy file.
-    taxonomy_df = utils.safe_read_csv(taxonomy, sep="\t")
+    taxonomy_df = utils.safe_read_csv(taxonomy, separator="\t")
 
     # Early check of taxonomy file columns (these come from taxonomy file itself)
     # Check pred_genome_type
     if "pred_genome_type" in taxonomy_df.columns:
-        invalid = taxonomy_df[
-            ~taxonomy_df["pred_genome_type"].isin(pred_genome_type_allowed)
-        ]
-        if not invalid.empty:
-            invalid_vals = ", ".join(map(str, invalid["pred_genome_type"].unique()))
+        invalid = taxonomy_df.filter(
+            ~pl.col("pred_genome_type").is_in(pred_genome_type_allowed)
+        )
+        if invalid.height > 0:
+            invalid_vals = ", ".join(map(str, invalid["pred_genome_type"].unique().to_list()))
             raise click.ClickException(
                 f"Invalid value(s) in column 'pred_genome_type': {invalid_vals}. Allowed values: {', '.join(pred_genome_type_allowed)}."
             )
     # Check pred_genome_struc
     if "pred_genome_struc" in taxonomy_df.columns:
-        invalid = taxonomy_df[
-            ~taxonomy_df["pred_genome_struc"].isin(pred_genome_struc_allowed)
-        ]
-        if not invalid.empty:
-            invalid_vals = ", ".join(map(str, invalid["pred_genome_struc"].unique()))
+        invalid = taxonomy_df.filter(
+            ~pl.col("pred_genome_struc").is_in(pred_genome_struc_allowed)
+        )
+        if invalid.height > 0:
+            invalid_vals = ", ".join(map(str, invalid["pred_genome_struc"].unique().to_list()))
             raise click.ClickException(
                 f"Invalid value(s) in column 'pred_genome_struc': {invalid_vals}. Allowed values: {', '.join(pred_genome_struc_allowed)}."
             )
 
     # Read the features and miuvig files (key/value format) into dictionaries.
-    features_dict = (
-        utils.safe_read_csv(features, sep="\t")
-        .set_index("MIUVIG_parameter")["value"]
-        .to_dict()
-    )
-    miuvig_dict = (
-        utils.safe_read_csv(miuvig, sep="\t")
-        .set_index("MIUVIG_parameter")["value"]
-        .to_dict()
-    )
+    features_df = utils.safe_read_csv(features, separator="\t")
+    features_dict = dict(zip(
+        features_df["MIUVIG_parameter"].to_list(),
+        features_df["value"].to_list()
+    ))
+    
+    miuvig_df = utils.safe_read_csv(miuvig, separator="\t")
+    miuvig_dict = dict(zip(
+        miuvig_df["MIUVIG_parameter"].to_list(),
+        miuvig_df["value"].to_list()
+    ))
 
-    assembly_dict = (
-        utils.safe_read_csv(assembly, sep="\t")
-        .set_index("Assembly_parameter")["value"]
-        .to_dict()
-    )
+    assembly_df = utils.safe_read_csv(assembly, separator="\t")
+    assembly_dict = dict(zip(
+        assembly_df["Assembly_parameter"].to_list(),
+        assembly_df["value"].to_list()
+    ))
 
     # Merge the dictionaries (miuvig values take precedence).
     structured_comment_dict = {
@@ -247,34 +248,32 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
 
     # Add merged parameters as new constant columns to the taxonomy DataFrame.
     if checkv:
-        checkv_df = utils.safe_read_csv(checkv, sep="\t")
-        checkv_df = checkv_df[
-            ["contig_id", "miuvig_quality", "completeness", "provirus"]
-        ]
-        checkv_df.rename(
-            columns={
-                "contig_id": "contig",
-                "miuvig_quality": "assembly_qual",
-                "completeness": "compl_score",
-            },
-            inplace=True,
+        checkv_df = utils.safe_read_csv(checkv, separator="\t")
+        checkv_df = checkv_df.select([
+            "contig_id", "miuvig_quality", "completeness", "provirus"
+        ])
+        checkv_df = checkv_df.rename({
+            "contig_id": "contig",
+            "miuvig_quality": "assembly_qual", 
+            "completeness": "compl_score",
+        })
+        checkv_df = checkv_df.with_columns(
+            pl.when(pl.col("provirus") == "Yes")
+            .then(pl.lit("provirus (UpViG)"))
+            .otherwise(pl.lit("independent sequence (UViG)"))
+            .alias("detec_type")
         )
-        checkv_df["detec_type"] = checkv_df["provirus"].map(
-            lambda x: (
-                "provirus (UpViG)" if x == "Yes" else "independent sequence (UViG)"
-            )
-        )
-        checkv_df = checkv_df[
-            ["contig_id", "miuvig_quality", "completeness", "detec_type"]
-        ]
-        taxonomy_df = pd.merge(taxonomy_df, checkv_df, on="contig", how="left")
+        checkv_df = checkv_df.select([
+            "contig", "assembly_qual", "compl_score", "detec_type"
+        ])
+        taxonomy_df = taxonomy_df.join(checkv_df, on="contig", how="left")
         merged_params.pop("assembly_qual")
         merged_params["compl_software"] = "CheckV"
         for param, val in merged_params.items():
-            taxonomy_df[param] = val
+            taxonomy_df = taxonomy_df.with_columns(pl.lit(val).alias(param))
     else:
         for param, val in merged_params.items():
-            taxonomy_df[param] = val
+            taxonomy_df = taxonomy_df.with_columns(pl.lit(val).alias(param))
 
     # If missing values in 'assembly_qual' and 'detec_type', fill with default values.
     # Ensure the columns exist before filling missing values
@@ -284,10 +283,12 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
     }
 
     for col, default in default_values.items():
-        if col not in taxonomy_df:
-            taxonomy_df[col] = default
+        if col not in taxonomy_df.columns:
+            taxonomy_df = taxonomy_df.with_columns(pl.lit(default).alias(col))
         else:
-            taxonomy_df[col].fillna(default, inplace=True)
+            taxonomy_df = taxonomy_df.with_columns(
+                pl.col(col).fill_null(default)
+            )
 
     # Reorder columns.
     desired_order = [
@@ -314,14 +315,11 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
     ]
     desired_existing = [col for col in desired_order if col in taxonomy_df.columns]
     remaining_cols = [col for col in taxonomy_df.columns if col not in desired_existing]
-    taxonomy_df = taxonomy_df[desired_existing + remaining_cols]
-    taxonomy_df.rename(
-        columns={
-            "contig": "Sequence_ID",
-            "StructuredCommentPrefixM": "StructuredCommentPrefix",
-        },
-        inplace=True,
-    )
+    taxonomy_df = taxonomy_df.select(desired_existing + remaining_cols)
+    taxonomy_df = taxonomy_df.rename({
+        "contig": "Sequence_ID",
+        "StructuredCommentPrefixM": "StructuredCommentPrefix",
+    })
 
     # Ensure the output directory exists, but only if a directory is specified
     output_dir = os.path.dirname(output)
@@ -329,7 +327,7 @@ def comments(taxonomy, features, miuvig, assembly, checkv, output):
         os.makedirs(output_dir, exist_ok=True)
 
     # Write the combined DataFrame to a TSV file.
-    taxonomy_df.to_csv(output + ".cmt", sep="\t", index=False, encoding="utf-8")
+    taxonomy_df.write_csv(output + ".cmt", separator="\t")
     click.echo(f"Combined file written to {output}.cmt")
 
 

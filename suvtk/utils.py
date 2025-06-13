@@ -23,7 +23,7 @@ import subprocess
 import sys
 
 import click
-import pandas as pd
+import polars as pl
 
 
 # Adapted from https://github.com/rcedgar/palm_annot/blob/77ac88ef7454dd3be9e5cbdb55792ce1ed7db95c/py/palm_annot.py#L121-L132
@@ -103,11 +103,11 @@ def safe_read_csv(path, **kwargs):
     path : str
         Path to the CSV file.
     **kwargs : dict
-        Additional arguments to pass to `pandas.read_csv`.
+        Additional arguments to pass to `polars.read_csv`.
 
     Returns
     -------
-    pandas.DataFrame
+    polars.DataFrame
         The contents of the CSV file.
 
     Raises
@@ -116,7 +116,7 @@ def safe_read_csv(path, **kwargs):
         If the file contains non-ASCII characters.
     """
     try:
-        return pd.read_csv(path, encoding="ascii", **kwargs)
+        return pl.read_csv(path, encoding="ascii", **kwargs)
     except UnicodeDecodeError as e:
         offending_bytes = e.object[e.start : e.end]
         # Try decoding using UTF-8 to show the offending character

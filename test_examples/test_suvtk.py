@@ -1,12 +1,11 @@
-#! .venv/bin/python3
 """
 Test script for SUVTK commands
 This script provides comprehensive testing of all suvtk commands with proper error handling
 """
 
 import subprocess
-import sys
-import os
+# import sys
+# import os
 import argparse
 from pathlib import Path
 import time
