@@ -1,0 +1,8 @@
+MIUVIG_parameter	value
+source_uvig	viral fraction metagenome (virome)
+assembly_software	metaSPAdes;v3.15.3;kmer set 21,33,55,77, default otherwise
+vir_ident_software	genomaD;1.7.0;score-calibration, default otherwise
+size_frac	0-0.8 um
+virus_enrich_appr	filtration + centrifugation + DNAse + RNAse
+nucl_acid_ext	10.1038/srep16532
+wga_amp_appr	mda based

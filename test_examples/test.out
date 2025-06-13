@@ -1,0 +1,223 @@
+# (base) ➜  suvtk git:(main) ✗ pixi run python ./test_examples/test_suvtk.py --skip-commands database
+Starting SUVTK comprehensive test suite
+============================================================
+
+=== Testing Help Commands ===
+
+Testing: Main help
+------------------------------------------------------------
+Running: suvtk --help
+✓ SUCCESS (0.60s)
+
+Testing: Download database help
+------------------------------------------------------------
+Running: suvtk download-database --help
+✓ SUCCESS (0.64s)
+
+Testing: Taxonomy help
+------------------------------------------------------------
+Running: suvtk taxonomy --help
+✓ SUCCESS (0.57s)
+
+Testing: Features help
+------------------------------------------------------------
+Running: suvtk features --help
+✓ SUCCESS (0.54s)
+
+Testing: Virus info help
+------------------------------------------------------------
+Running: suvtk virus-info --help
+✓ SUCCESS (0.63s)
+
+Testing: Co-occurrence help
+------------------------------------------------------------
+Running: suvtk co-occurrence --help
+✓ SUCCESS (0.58s)
+
+Testing: GBK2TBL help
+------------------------------------------------------------
+Running: suvtk gbk2tbl --help
+✓ SUCCESS (0.55s)
+
+Testing: Comments help
+------------------------------------------------------------
+Running: suvtk comments --help
+✓ SUCCESS (0.54s)
+
+Testing: Table2ASN help
+------------------------------------------------------------
+Running: suvtk table2asn --help
+✓ SUCCESS (0.55s)
+
+=== Skipping Database Download ===
+
+=== Testing Main Commands ===
+
+Testing: Taxonomy assignment
+------------------------------------------------------------
+Running: suvtk taxonomy -i test_examples/input/test_sequences.fasta -o test_examples/output/taxonomy_results -d test_examples/database/suvtk_db
+✗ FAILED (300.25s)
+  Error: Command timed out after 300 seconds
+
+Testing: Feature extraction
+------------------------------------------------------------
+Running: suvtk features -i test_examples/input/test_sequences.fasta -o test_examples/output/features_results -d test_examples/database/suvtk_db
+✗ FAILED (1.89s)
+  Error: Traceback (most recent call last):
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/bin/suvtk", line 10, in <module>
+    sys.exit(cli())
+             ~~~^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1442, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+  File "/home/neri/Documents/GitHub/suvtk/suvtk/features.py", line 478, in features
+    training_info = orf_finder.train(
+        *(bytes(seq['seq'], 'utf-8') for seq in records), translation_table=transl_table
+    )
+  File "lib.pyx", line 5528, in pyrodigal.lib.GeneFinder.train
+ValueError: sequence must be at least 20000 characters (10443 found)
+
+
+Testing: Virus information
+------------------------------------------------------------
+Running: suvtk virus-info --taxonomy test_examples/output/taxonomy_results/taxonomy.tsv -o test_examples/output/virus_info_results -d test_examples/database/suvtk_db
+✗ FAILED (0.76s)
+  Error: Usage: suvtk virus-info [OPTIONS]
+Try 'suvtk virus-info -h' for help.
+
+Error: Invalid value for '--taxonomy': Path 'test_examples/output/taxonomy_results/taxonomy.tsv' does not exist.
+
+
+Testing: Single sequence taxonomy
+------------------------------------------------------------
+Running: suvtk taxonomy -i test_examples/input/YNP_partiti.fasta -o test_examples/output/single_taxonomy -d test_examples/database/suvtk_db
+✗ FAILED (300.03s)
+  Error: Command timed out after 300 seconds
+
+Testing: Single sequence features
+------------------------------------------------------------
+Running: suvtk features -i test_examples/input/YNP_partiti.fasta -o test_examples/output/single_features -d test_examples/database/suvtk_db
+✗ FAILED (1.56s)
+  Error: Traceback (most recent call last):
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/bin/suvtk", line 10, in <module>
+    sys.exit(cli())
+             ~~~^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1442, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+  File "/home/neri/Documents/GitHub/suvtk/suvtk/features.py", line 478, in features
+    training_info = orf_finder.train(
+        *(bytes(seq['seq'], 'utf-8') for seq in records), translation_table=transl_table
+    )
+  File "lib.pyx", line 5528, in pyrodigal.lib.GeneFinder.train
+ValueError: sequence must be at least 20000 characters (3229 found)
+
+
+=== Testing Advanced Commands ===
+Skipping comments test - prerequisite files not found
+
+=== Testing Co-occurrence Analysis ===
+
+Testing: Co-occurrence analysis
+------------------------------------------------------------
+Running: suvtk co-occurrence -i test_examples/output/test_abundance.tsv -o test_examples/output/co_occurrence_results
+✓ SUCCESS (2.23s)
+
+=== Test Summary ===
+============================================================
+Total tests: 15
+Successful: 10
+Failed: 5
+
+Failed Tests:
+  - Taxonomy assignment
+    Error: Command timed out after 300 seconds
+  - Feature extraction
+    Error: Traceback (most recent call last):
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/bin/suvtk", line 10, in <module>
+    sys.exit(cli())
+             ~~~^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1442, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+  File "/home/neri/Documents/GitHub/suvtk/suvtk/features.py", line 478, in features
+    training_info = orf_finder.train(
+        *(bytes(seq['seq'], 'utf-8') for seq in records), translation_table=transl_table
+    )
+  File "lib.pyx", line 5528, in pyrodigal.lib.GeneFinder.train
+ValueError: sequence must be at least 20000 characters (10443 found)
+
+  - Virus information
+    Error: Usage: suvtk virus-info [OPTIONS]
+Try 'suvtk virus-info -h' for help.
+
+Error: Invalid value for '--taxonomy': Path 'test_examples/output/taxonomy_results/taxonomy.tsv' does not exist.
+
+  - Single sequence taxonomy
+    Error: Command timed out after 300 seconds
+  - Single sequence features
+    Error: Traceback (most recent call last):
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/bin/suvtk", line 10, in <module>
+    sys.exit(cli())
+             ~~~^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1442, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/neri/Documents/GitHub/suvtk/.pixi/envs/default/lib/python3.13/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+  File "/home/neri/Documents/GitHub/suvtk/suvtk/features.py", line 478, in features
+    training_info = orf_finder.train(
+        *(bytes(seq['seq'], 'utf-8') for seq in records), translation_table=transl_table
+    )
+  File "lib.pyx", line 5528, in pyrodigal.lib.GeneFinder.train
+ValueError: sequence must be at least 20000 characters (3229 found)
+
+
+Output files in: test_examples/output
+Generated files:
+  - taxonomy_results (0 bytes)
+  - features_results (0 bytes)
+  - single_taxonomy (0 bytes)
+  - single_features (0 bytes)
+  - test_miuvig.tsv (352 bytes)
+  - test_assembly.tsv (143 bytes)
+  - test_abundance.tsv (66 bytes)
+  - co_occurrence_results_correlation_matrix.tsv (159 bytes)
