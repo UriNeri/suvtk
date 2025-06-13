@@ -4,20 +4,19 @@ version = "0.1.3"
 description = "Tool to submit viral sequences to Genbank."
 readme = "README.md"
 authors = [{name = "Lander De Coninck"}]
-license = {text = "Apache-2.0"}
+license = "GPL-3.0"
 requires-python = ">=3.9"
-classifiers = [
-    "License :: OSI Approved :: Apache Software License"
-]
 dependencies = [
+    "needletail>=0.6.0",
     "biopython>=1.83",
     "click",
     "numpy>1.24.4",
-    "pandas>=2.0.3",
     "pyrodigal-gv>=0.3.2",
     "requests>=2.32.3",
     "scipy>=1.13.1",
     "taxopy>=0.14.0",
+    "reportlab>=4.4.1",
+    "polars>=1.30.0,<2",
 ]
 
 [build-system]
@@ -36,5 +35,23 @@ suvtk = "suvtk.cli:cli"
 [project.optional-dependencies]
 test = ["pytest"]
 
+[tool.setuptools.packages.find]
+include = ["suvtk*"]
+exclude = ["test_examples*"]
+
 [tool.setuptools.package-data]
-data = ["segmented_viruses.tsv", "genome_types.tsv"]
+suvtk = ["segmented_viruses.tsv", "genome_types.tsv"]
+
+[tool.pixi.project]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+suvtk = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+mmseqs2 = ">=17.b804f,<18"
+uv = ">=0.7.12,<0.8"
+
+
+[tool.pixi.tasks]

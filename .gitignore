@@ -225,3 +225,6 @@ pyrightconfig.json
 # Neri's dumb stuff
 tmp/
 test_examples/database/
+# pixi environments
+.pixi
+*.egg-info
